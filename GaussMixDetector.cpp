@@ -1,5 +1,6 @@
 #include "GaussMixDetector.h"
 
+#include <opencv2/imgproc.hpp>
 
 const static cv::Mat smCircle = (cv::Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0,
 														  0, 1, 1, 1, 0,
@@ -332,9 +333,8 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& fClone, cv::Mat& motion
 	ptrType* ptD[K];
 	ptrType* ptW[K];
 	bool isCurrent[K] {};
-	bool isMotion;
 	int tmpK;
-	
+
 	cv::Matx13d tmpF;
 	cv::Matx13d delta[K];
 	cv::Matx13d tmpM[K];
@@ -357,7 +357,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& fClone, cv::Mat& motion
 		{
 			count = 0;
 			w = 0;
-			isMotion = false;
 			iRGB = j*fChannels;
 			iDev = j*fChannels*fChannels;
 			// !!! why 3 ??
