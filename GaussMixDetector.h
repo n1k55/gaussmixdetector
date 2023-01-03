@@ -1,6 +1,8 @@
 #pragma once
 
-#include "main.h"
+#include <vector>
+
+#include <opencv2/core/mat.hpp>
 
 #define defaultT 0.1
 #define defaultHistory 100
