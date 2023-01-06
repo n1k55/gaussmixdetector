@@ -108,8 +108,8 @@ inline double normDistrib( double x, double m, double d )
 
 void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& fClone, cv::Mat& motion )
 {
-	int i,j,k,motionI;
-	short count;
+	int i,j,motionI;
+	short k,count;
 	double w, r;
 
 	const ptrType* ptF;
@@ -123,7 +123,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& fClone, cv::Mat& motion )
 	bool isMotion;
 
 	double tmpF;
-	int tmpK;
+	short tmpK;
 
 	double tmpM[K] {};
 	double tmpD[K] {};
@@ -281,7 +281,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& fClone, cv::Mat& motion )
 					ptMo[motionI] = 255;
 			}
 			
-			ptK[j] = tmpK;
+			ptK[j] = static_cast<uchar>(tmpK);
 			for ( k = 0; k < tmpK; k++ )
 			{
 				ptM[k][j] = tmpM[k];
@@ -321,8 +321,8 @@ inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& fClone, cv::Mat& motion )
 {
-	int i,j,k,c,cd,iRGB,iDev;
-	short count;
+	int i,j,c,cd,iRGB,iDev;
+	short k,count;
 	double w;
 
 	const ptrType* ptF;
@@ -505,7 +505,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& fClone, cv::Mat& motion
 				ptMo[j] = 255;
 						
 
-			ptK[j] = tmpK;
+			ptK[j] = static_cast<uchar>(tmpK);
 			for ( k = 0; k < tmpK; k++ )
 			{
 				for ( c = 0; c < fChannels; c++ )
