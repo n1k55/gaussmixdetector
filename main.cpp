@@ -1,4 +1,7 @@
-﻿#include "main.h"
+﻿#include <iostream>
+
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
 
 #include "GaussMixDetector.h"
 
@@ -18,7 +21,6 @@ int main()
 
 	bool camera = true;
 	bool starter = true;
-	bool perc = false;
 
 	int history = 1000;
 	double Cf = 0.1;
@@ -53,7 +55,6 @@ int main()
 	cv::VideoWriter vidmotion;
 	cv::VideoWriter vidsplit;
 
-	unsigned int success = 0;
 	unsigned int total = 0;
 
 	for (; ; )
