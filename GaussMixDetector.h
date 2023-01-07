@@ -36,7 +36,7 @@ class GaussMixDetector
 
 public:
 	GaussMixDetector ( void );
-	GaussMixDetector ( unsigned int _historyLength, double _initDeviation, double _T = defaultT, double _Cf = defaultCf );
+	GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT, double _Cf = defaultCf );
 
 private:
 	void Init( const cv::Mat& );

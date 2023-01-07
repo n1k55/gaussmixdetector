@@ -122,6 +122,7 @@ int main(int argc, char** argv)
 			vidmotion.open(rawName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
 		vidmotion << motion;
 
+
 		cv::imshow("Frame", frame);
 
 
