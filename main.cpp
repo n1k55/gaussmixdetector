@@ -26,7 +26,6 @@ int main()
 	double Cf = 0.1;
 	GaussMixDetector bg(history, 20.0, 40, Cf);
 
-	cv::Mat tmp, tmpx, tmpy, tmpLeft, tmpRight;
 	cv::Mat frame;
 	cv::Mat motion;
 
