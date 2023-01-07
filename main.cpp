@@ -11,34 +11,57 @@
 #endif
 
 
-int main()
+int main(int argc, char** argv)
 {
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
-	LARGE_INTEGER frequency;        // ticks per second
-	LARGE_INTEGER t1, t2;           // ticks
-	double elapsedTimeGauss = 0;
-#endif
+	const cv::String keys =
+		"{help h usage ? |      | print this message    }"
+		"{@path          |      | input video file path }"
+		"{history hist   |100   | history parameter     }"
+		"{dev d          |20.0  | initial deviation     }"
+		"{T t            |30.0  | BF threshold          }"
+		"{Cf cf          |0.1   | portion of FG data    }";
 
+	cv::CommandLineParser parser(argc, argv, keys);
+	parser.about("Gauss Mixture Motion Detector\n");
+
+	if (parser.has("help"))
+	{
+		parser.printMessage();
+		return 0;
+	}
+
+	// default name for output video from camera stream
+	cv::String inputName("cam");		// should add current date and time to this
+	cv::String rawName(inputName);
 	bool camera = true;
-	bool starter = true;
 
-	int history = 1000;
-	double Cf = 0.1;
-	GaussMixDetector bg(history, 20.0, 40, Cf);
+	if (parser.has("@path"))
+	{
+		camera = false;
+		inputName = parser.get<cv::String>("@path");
+	}
+
+	int history = parser.get<int>("history");
+	double deviation = parser.get<int>("dev");
+	double T = parser.get<int>("T");
+	double Cf = parser.get<int>("Cf");
+	GaussMixDetector bg(history, deviation, T, Cf);
 
 	cv::Mat frame;
 	cv::Mat motion;
 
-	std::string dataFolder("data/");
-	std::string inputName(dataFolder + "input-test");
-	std::string videoExt(".mp4");
-
 	cv::VideoCapture cap;
 	if (camera)
-		cap.open(700);
+	{
+		// try a couple of camera indexes
+		// (there's no solid method for finding cameras in OpenCV as of now)
+		if ( !cap.open(0) )
+			if ( !cap.open(1) )
+				cap.open(700);
+	}
 	else
 	{
-		cap.open(inputName + videoExt);
+		cap.open(inputName);
 		cap.set(cv::CAP_PROP_CONVERT_RGB, false);
 		cap.set(cv::CAP_PROP_POS_FRAMES, 0);
 	}
@@ -48,13 +71,27 @@ int main()
 		return 1;
 	}
 
+	// if videofile opened it means it has a valid extension
+	if (!camera)
+	{
+		size_t lastdot = inputName.find_last_of(".");
+		assert(lastdot != std::string::npos);
+		rawName = inputName.substr(0, lastdot);     // cut off the extension
+	}
+
 	cv::namedWindow("Frame");
 	cv::namedWindow("Motion");
 
 	cv::VideoWriter vidmotion;
-	cv::VideoWriter vidsplit;
+	cv::String videoExt(".mp4");
 
 	unsigned int total = 0;
+
+#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+	LARGE_INTEGER frequency;        // ticks per second
+	LARGE_INTEGER t1, t2;           // ticks
+	double elapsedTimeGauss = 0;
+#endif
 
 	for (; ; )
 	{
@@ -81,16 +118,9 @@ int main()
 		cv::imshow("Motion", motion);
 
 		// Writing motion video
-		if (cv::waitKey(15) == 3014656)   // delete key
-		{
-			starter = true;
-		}
-		if (starter)
-		{
-			if (!vidmotion.isOpened())
-				vidmotion.open(inputName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
-			vidmotion << motion;
-		}
+		if (!vidmotion.isOpened())
+			vidmotion.open(rawName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
+		vidmotion << motion;
 
 
 		cv::imshow("Frame", frame);
