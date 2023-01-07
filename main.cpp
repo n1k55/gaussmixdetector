@@ -89,7 +89,7 @@ int main()
 		if (starter)
 		{
 			if (!vidmotion.isOpened())
-				vidmotion.open(inputName + "_motion" + videoExt, cv::VideoWriter::fourcc('P', 'I', 'M', '1'), 20, cv::Size(frame.cols, frame.rows), false);
+				vidmotion.open(inputName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
 			vidmotion << motion;
 		}
 
