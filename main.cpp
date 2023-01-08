@@ -45,6 +45,13 @@ int main(int argc, char** argv)
 	double deviation = parser.get<double>("dev");
 	double T = parser.get<double>("T");
 	double Cf = parser.get<double>("Cf");
+
+	if (!parser.check())
+	{
+		parser.printErrors();
+		return 1;
+	}
+
 	GaussMixDetector bg(history, deviation, T, Cf);
 
 	cv::Mat frame;
