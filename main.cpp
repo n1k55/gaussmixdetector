@@ -42,9 +42,9 @@ int main(int argc, char** argv)
 	}
 
 	int history = parser.get<int>("history");
-	double deviation = parser.get<int>("dev");
-	double T = parser.get<int>("T");
-	double Cf = parser.get<int>("Cf");
+	double deviation = parser.get<double>("dev");
+	double T = parser.get<double>("T");
+	double Cf = parser.get<double>("Cf");
 	GaussMixDetector bg(history, deviation, T, Cf);
 
 	cv::Mat frame;
