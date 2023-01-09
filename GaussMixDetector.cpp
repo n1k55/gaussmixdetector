@@ -301,9 +301,7 @@ double toDouble( cv::MatExpr M )
 
 inline double Mahalanobis( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 {
-	cv::Matx13d delta = (x-m);
-	C = C.inv();
-	return (delta*C).dot(delta);
+	return Mahalanobis( (x-m), C );
 }
 
 inline double Mahalanobis( cv::Matx13d delta, cv::Matx33d C )
