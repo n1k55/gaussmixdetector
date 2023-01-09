@@ -105,9 +105,6 @@ int main(int argc, char** argv)
 		cap >> frame;							// read the source
 		if (frame.empty()) break;				// check if reached the end
 
-		// should test how it works with HLS and others
-		//cv::cvtColor( frame, frame, CV_BGR2HLS );
-
 #if defined (LOG_TIME_ALL) && LOG_TIME_ALL
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&t1);
