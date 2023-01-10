@@ -299,15 +299,15 @@ double toDouble( cv::MatExpr M )
 	return A.at<double>(0);
 }
 
+inline double Mahalanobis(cv::Matx13d delta, cv::Matx33d C)
+{
+	C = C.inv();
+	return (delta * C).dot(delta);
+}
+
 inline double Mahalanobis( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 {
 	return Mahalanobis( (x-m), C );
-}
-
-inline double Mahalanobis( cv::Matx13d delta, cv::Matx33d C )
-{
-	C = C.inv();
-	return (delta*C).dot(delta);
 }
 
 inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
