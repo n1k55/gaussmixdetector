@@ -106,7 +106,7 @@ inline double normDistrib( double x, double m, double d )
 	return tmp / d / sqrt(2*CV_PI);
 }
 
-void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& fClone, cv::Mat& motion )
+void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 {
 	int i,j,motionI;
 	short k,count;
@@ -317,7 +317,7 @@ inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 	return exp( - mah / 2 ) / 2 / CV_PI / sqrt(2*CV_PI); // det;
 }
 
-void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& fClone, cv::Mat& motion )
+void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 {
 	int i,j,c,cd,iRGB,iDev;
 	short k,count;
@@ -538,17 +538,14 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 		throw std::invalid_argument("Input image channels different from initial. Stream must be uniform.");
 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
-
-	// shouldn't create a new image clone every frame
-	cv::Mat fClone;
 	frame.convertTo( fClone, CV_MAKETYPE(CVType, fChannels) );
 
 	// shouldn't algorithm be universal ??
 	// i.e. you should be able to create the model for R and G channels only
 	if (fChannels == 1)
-		getpwUpdateAndMotion(fClone, motion);
+		getpwUpdateAndMotion(motion);
 	else if (fChannels == 3)
-		getpwUpdateAndMotionRGB(fClone, motion);
+		getpwUpdateAndMotionRGB(motion);
 	else
 		throw std::invalid_argument("Input image has non-standard number of channels.");
 

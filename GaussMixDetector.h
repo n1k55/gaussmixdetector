@@ -21,7 +21,7 @@ class GaussMixDetector
 	double Cf;							// portion of FG data
 
 	int fRows, fCols, fChannels;		// frame parameters
-	// cv::Mat fClone;
+	cv::Mat fClone;
 
 	bool firstFrame;					// first step flag
 	unsigned int historyLength;			// learning history length
@@ -40,8 +40,8 @@ public:
 
 private:
 	void Init( const cv::Mat& );
-	void getpwUpdateAndMotion( cv::Mat& , cv::Mat& );
-	void getpwUpdateAndMotionRGB( cv::Mat& , cv::Mat& );
+	void getpwUpdateAndMotion( cv::Mat& );
+	void getpwUpdateAndMotionRGB( cv::Mat& );
 
 public:
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
