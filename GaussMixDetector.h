@@ -46,6 +46,6 @@ private:
 public:
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
 
-	~GaussMixDetector ( void );
+	~GaussMixDetector ( void ) = default;
 };
 

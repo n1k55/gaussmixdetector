@@ -556,7 +556,3 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 		cv::dilate(motion, motion, smCircle);
 	}
 }
-
-GaussMixDetector::~GaussMixDetector()
-{
-}
