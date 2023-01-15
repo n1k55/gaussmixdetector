@@ -281,6 +281,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 					if( !(abs(tmpM[0] - tmpM[k]) > T) )
 					{
 						isMotion = false;
+						break;
 					}
 				}
 
