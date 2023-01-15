@@ -63,8 +63,12 @@ int main(int argc, char** argv)
 		// try a couple of camera indexes
 		// (there's no solid method for finding cameras in OpenCV as of now)
 		if ( !cap.open(0) )
+		{
 			if ( !cap.open(1) )
+			{
 				cap.open(700);
+			}
+		}
 	}
 	else
 	{
@@ -103,7 +107,10 @@ int main(int argc, char** argv)
 	for (; ; )
 	{
 		cap >> frame;							// read the source
-		if (frame.empty()) break;				// check if reached the end
+		if (frame.empty())
+		{
+			break;				// check if reached the end
+		}
 
 #if defined (LOG_TIME_ALL) && LOG_TIME_ALL
 		QueryPerformanceFrequency(&frequency);
@@ -123,16 +130,19 @@ int main(int argc, char** argv)
 
 		// Writing motion video
 		if (!vidmotion.isOpened())
+		{
 			vidmotion.open(rawName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
+		}
 		vidmotion << motion;
-
 
 		cv::imshow("Frame", frame);
 
-
 		total++;
 
-		if (cv::waitKey(15) == 32) break;  // space key to stop the loop
+		if (cv::waitKey(15) == 32)
+		{
+			break;  // space key to stop the loop
+		}
 	}
 #if defined(LOG_TIME_ALL) && LOG_TIME_ALL
 	elapsedTimeGauss /= double(total);

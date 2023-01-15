@@ -42,7 +42,9 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 {
 	assert(!frame.empty());
 	if (frame.rows < 1 || frame.cols < 1)
+	{
 		throw std::invalid_argument("Image has invalid size.");
+	}
 
 	cv::Mat tmp;
 	ptrType* p;
@@ -78,7 +80,9 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 		{
 			p = tmp.ptr<double>(r);
 			for( int c = 0; c < fCols*fChannels*fChannels; c++ )
+			{
 				p[c] = ( (c % (fChannels*fChannels)) % (fChannels+1) == 0 ) ? initDeviation : 0;
+			}
 		}
 		deviation.push_back( tmp );
 	}
@@ -188,20 +192,17 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			{
 				for ( k = 0; k < tmpK; k++ )
 				{
-					
 					if ( isCurrent[k] ) {
 						r = alpha * normDistrib( tmpF, tmpM[k], tmpD[k] );
 						tmpD[k] = sqrt ( (1-r) / 6.25 * tmpD[k] * tmpD[k] + r * (tmpF - tmpM[k]) );
 						tmpM[k] = (1-r) * tmpM[k] + r*tmpF;
 					}
-					
-					
+
 					if ( isCurrent[k] ) {
 						tmpM[k] = (1-alpha) * tmpM[k] + alpha * tmpF;
 						tmpD[k] = sqrt ( (1-alpha) * tmpD[k] * tmpD[k] / 6.25
 							+ alpha * (tmpF - tmpM[k]) * (tmpF - tmpM[k]) );
 					}
-					
 				}
 			}
 			for ( k = 0; k < tmpK; k++ )
@@ -209,14 +210,18 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 				tmpW[k] = tmpW[k] * (1-alpha) + alpha*int(isCurrent[k]);
 				w += tmpW[k];
 			}
-			
+
 			for ( k = 0; k < tmpK; k++ )
+			{
 				tmpW[k] = tmpW[k] / w;
+			}
 
 			w = 0;
 			for ( k = 0; k < tmpK; k++ )
+			{
 				w += tmpW[k];
-			
+			}
+
 			assert( w == 1.0 );
 
 			bool noMov = false;
@@ -243,10 +248,10 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			}
 
 			motionI = j / fChannels;
-			
+
 			count = -1;
 			w = tmpW[0];
-			
+
 			for ( k = 1; k < tmpK; k++ )
 			{
 				if ( w >= Cf ) {
@@ -254,33 +259,42 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 					break;
 				}
 				else
+				{
 					w += tmpW[k];
+				}
 			}
 			if ( count != -1 )
 			{
 				for ( k = 0; k < count; k++ )
 				{
 					if(isCurrent[k])
+					{
 						ptMo[motionI] = 255;
+					}
 				}
 			}
-			
-			
+
 			if( tmpK > 1 )
 			{
 				isMotion = true;
 				for ( k = 1; k < tmpK; k++ )
 				{
 					if( abs(tmpM[0] - tmpM[k]) > T )
+					{
 						isMotion = isMotion && true;
+					}
 					else
+					{
 						isMotion = isMotion && false;
+					}
 				}
 
 				if( isMotion )
+				{
 					ptMo[motionI] = 255;
+				}
 			}
-			
+
 			ptK[j] = static_cast<uchar>(tmpK);
 			for ( k = 0; k < tmpK; k++ )
 			{
@@ -359,9 +373,11 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			iDev = j*fChannels*fChannels;
 			// !!! why 3 ??
 			for ( c = 0; c < 3; c++ )
+			{
 				tmpF(c) = ptF[iRGB + c];
+			}
 			tmpK = ptK[j];
-			
+
 			for ( k = 0; k < tmpK; k++ )
 			{
 				for ( c = 0; c < 3; c++ )
@@ -377,7 +393,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				//w = cv::determinant(tmpD[k]);
 				//assert( cv::determinant(tmpD[k]) );
 			}
-			
+
 			for ( k = 0; k < tmpK; k++ )
 			{
 				isCurrent[k] = false;
@@ -430,15 +446,18 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				tmpW[k] = tmpW[k] * (1-alpha) + alpha*int(isCurrent[k]);
 				w += tmpW[k];
 			}
-			
+
 			for ( k = 0; k < tmpK; k++ )
+			{
 				tmpW[k] = tmpW[k] / w;
+			}
 
 			w = 0;
 			for ( k = 0; k < tmpK; k++ )
+			{
 				w += tmpW[k];
-			
-			
+			}
+
 			bool noMov = false;
 			while (!noMov)
 			{
@@ -460,10 +479,10 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					}
 				}
 			}
-			
+
 			count = -1;
 			w = tmpW[0];
-			
+
 			for ( k = 1; k < tmpK; k++ )
 			{
 				if ( w >= (1-Cf) ) {
@@ -471,7 +490,9 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					break;
 				}
 				else
+				{
 					w += tmpW[k];
+				}
 			}
 			/*
 			if ( count != -1 )
@@ -488,20 +509,27 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 
 			if ( sqrt(delta[0].dot(delta[0])) > T )
 			//if ( Mahalanobis(delta[0], tmpD[0]) > sqrt( cv::trace(tmpD[0]) ) )
+			{
 				FG = true;
+			}
 			else
+			{
 				FG = false;
+			}
 
 			for ( k = 1; k < count; k++ )
 			{
 				if ( sqrt(delta[k].dot(delta[k])) > T )
 				//if ( Mahalanobis(delta[k], tmpD[k]) > sqrt( cv::trace(tmpD[k]) ) )
+				{
 					FG = FG && true;
+				}
 			}
-			
+
 			if( FG )
+			{
 				ptMo[j] = 255;
-						
+			}
 
 			ptK[j] = static_cast<uchar>(tmpK);
 			for ( k = 0; k < tmpK; k++ )
@@ -523,7 +551,9 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup )
 {
 	if (frame.empty())
+	{
 		throw std::invalid_argument("No input image.");
+	}
 
 	if (firstFrame)
 	{
@@ -533,9 +563,13 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 	}
 
 	if (fRows != frame.rows || fCols != frame.cols)
+	{
 		throw std::invalid_argument("Input image size different from initial. Stream must be uniform.");
+	}
 	if (fChannels != frame.channels())
+	{
 		throw std::invalid_argument("Input image channels different from initial. Stream must be uniform.");
+	}
 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
 	frame.convertTo( fClone, CV_MAKETYPE(CVType, fChannels) );
@@ -543,11 +577,17 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 	// shouldn't algorithm be universal ??
 	// i.e. you should be able to create the model for R and G channels only
 	if (fChannels == 1)
+	{
 		getpwUpdateAndMotion(motion);
+	}
 	else if (fChannels == 3)
+	{
 		getpwUpdateAndMotionRGB(motion);
+	}
 	else
+	{
 		throw std::invalid_argument("Input image has non-standard number of channels.");
+	}
 
 	// optional erode + dilate processing of the motion image
 	if (cleanup)
