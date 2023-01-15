@@ -41,10 +41,10 @@ int main(int argc, char** argv)
 		inputName = parser.get<cv::String>("@path");
 	}
 
-	int history = parser.get<int>("history");
-	double deviation = parser.get<double>("dev");
-	double T = parser.get<double>("T");
-	double Cf = parser.get<double>("Cf");
+	const auto history = parser.get<int>("history");
+	const auto deviation = parser.get<double>("dev");
+	const auto T = parser.get<double>("T");
+	const auto Cf = parser.get<double>("Cf");
 
 	if (!parser.check())
 	{
