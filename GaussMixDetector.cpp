@@ -124,7 +124,6 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 	std::vector<ptrType*> ptD(K);
 	std::vector<ptrType*> ptW(K);
 	std::vector<bool> isCurrent(K,false);
-	bool isMotion;
 
 	double tmpF;
 	short tmpK;
@@ -276,16 +275,16 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 
 			if( tmpK > 1 )
 			{
-				isMotion = true;
+				bool isMotion = true;
 				for ( k = 1; k < tmpK; k++ )
 				{
 					if( abs(tmpM[0] - tmpM[k]) > T )
 					{
-						isMotion = isMotion && true;
+						isMotion = isMotion;
 					}
 					else
 					{
-						isMotion = isMotion && false;
+						isMotion = false;
 					}
 				}
 
@@ -504,9 +503,8 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				}
 			}
 			*/
-			
-			bool FG;
 
+			bool FG;
 			if ( sqrt(delta[0].dot(delta[0])) > T )
 			//if ( Mahalanobis(delta[0], tmpD[0]) > sqrt( cv::trace(tmpD[0]) ) )
 			{
@@ -522,7 +520,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				if ( sqrt(delta[k].dot(delta[k])) > T )
 				//if ( Mahalanobis(delta[k], tmpD[k]) > sqrt( cv::trace(tmpD[k]) ) )
 				{
-					FG = FG && true;
+					FG = FG;
 				}
 			}
 
