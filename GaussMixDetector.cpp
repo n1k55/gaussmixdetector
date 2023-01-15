@@ -278,11 +278,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 				bool isMotion = true;
 				for ( k = 1; k < tmpK; k++ )
 				{
-					if( abs(tmpM[0] - tmpM[k]) > T )
-					{
-						isMotion = isMotion;
-					}
-					else
+					if( !(abs(tmpM[0] - tmpM[k]) > T) )
 					{
 						isMotion = false;
 					}
@@ -504,25 +500,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			}
 			*/
 
-			bool FG;
-			if ( sqrt(delta[0].dot(delta[0])) > T )
-			//if ( Mahalanobis(delta[0], tmpD[0]) > sqrt( cv::trace(tmpD[0]) ) )
-			{
-				FG = true;
-			}
-			else
-			{
-				FG = false;
-			}
-
-			for ( k = 1; k < count; k++ )
-			{
-				if ( sqrt(delta[k].dot(delta[k])) > T )
-				//if ( Mahalanobis(delta[k], tmpD[k]) > sqrt( cv::trace(tmpD[k]) ) )
-				{
-					FG = FG;
-				}
-			}
+			bool FG = sqrt(delta[0].dot(delta[0])) > T;
 
 			if( FG )
 			{
