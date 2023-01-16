@@ -57,7 +57,7 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	mean.push_back( tmp );
 	weight.push_back( cv::Mat( fRows, fCols, CV_MAKETYPE( CVType, 1 )
 			, cv::Scalar( 1 ) ) );
-	
+
 	for ( int k = 1; k < K; k++ )
 	{
 		mean.push_back( cv::Mat( fRows, fCols, CV_MAKETYPE( CVType, fChannels )
@@ -65,14 +65,7 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 		weight.push_back( cv::Mat( fRows, fCols, CV_MAKETYPE( CVType, 1 )
 			, cv::Scalar( 0 ) ) );
 	}
-	/*
-	for ( int i = 0; i < K; i++ )
-	{
-		deviation.push_back( cv::Mat( fRows, fCols, CV_MAKETYPE( CVType, fChannels )
-			, cv::Scalar( initDeviation, initDeviation, initDeviation, initDeviation ) ) );
-	}
-	*/
-	
+
 	tmp.create( fRows, fCols, CV_MAKETYPE( CVType, fChannels*fChannels ) );
 	for ( int k = 0; k < K; k++ )
 	{
@@ -86,7 +79,6 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 		}
 		deviation.push_back( tmp );
 	}
-	
 
 	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
 			, cv::Scalar( 1 ) );
@@ -229,7 +221,6 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 				noMov = true;
 				for ( k = 0; k < tmpK-1; k++ )
 				{
-					//if ( tmpW[k] / tmpD[k] < tmpW[k+1] / tmpD[k+1] )
 					if ( tmpW[k] > tmpW[k+1] )
 					{
 						w = tmpW[k];
@@ -323,7 +314,6 @@ inline double Mahalanobis( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 {
 	double mah = Mahalanobis( x, m, C );
-	//double det = sqrt( cv::determinant(C) );
 	return exp( - mah / 2 ) / 2 / CV_PI / sqrt(2*CV_PI); // det;
 }
 
@@ -386,20 +376,15 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					tmpW[k] = ptW[k][j];
 				}
 				delta[k] = tmpF - tmpM[k];
-				//w = cv::determinant(tmpD[k]);
-				//assert( cv::determinant(tmpD[k]) );
 			}
 
 			for ( k = 0; k < tmpK; k++ )
 			{
 				isCurrent[k] = false;
-				//dhelp = tmpD[k].inv();
-				//w = (delta[k]*dhelp).dot(delta[k]);
 				if ( Mahalanobis(delta[k], tmpD[k]) < sqrt( cv::trace(tmpD[k]) ) )
 				{
 					count++;
 					isCurrent[k] = true;
-					//break;
 				}
 				else
 				{
@@ -409,7 +394,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 
 			if( count == 0 )
 			{
-				//ptMo[j] = 255;
 				if ( tmpK < K )
 				{
 					tmpM[tmpK] = tmpF;
@@ -490,16 +474,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					w += tmpW[k];
 				}
 			}
-			/*
-			if ( count != -1 )
-			{
-				for ( k = 0; k < count; k++ )
-				{
-					if( normDistrib3(tmpF, tmpM[k], tmpD[k]) < T )
-						ptMo[j] = 255;
-				}
-			}
-			*/
 
 			bool FG = sqrt(delta[0].dot(delta[0])) > T;
 
