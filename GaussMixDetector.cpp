@@ -248,10 +248,8 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 					count = k;
 					break;
 				}
-				else
-				{
-					w += tmpW[k];
-				}
+
+				w += tmpW[k];
 			}
 			if ( count != -1 )
 			{
@@ -469,10 +467,8 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					count = k;
 					break;
 				}
-				else
-				{
-					w += tmpW[k];
-				}
+
+				w += tmpW[k];
 			}
 
 			bool FG = sqrt(delta[0].dot(delta[0])) > T;
