@@ -104,9 +104,13 @@ inline double normDistrib( double x, double m, double d )
 
 void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 {
-	int i,j,motionI;
-	short k,count;
-	double w, r;
+	int i;
+	int j;
+	int motionI;
+	short k;
+	short count;
+	double w;
+	double r;
 
 	const ptrType* ptF;
 	uchar* ptMo;
@@ -317,8 +321,14 @@ inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 {
-	int i,j,c,cd,iRGB,iDev;
-	short k,count;
+	int i;
+	int j;
+	int c;
+	int cd;
+	int iRGB;
+	int iDev;
+	short k;
+	short count;
 	double w;
 
 	const ptrType* ptF;
