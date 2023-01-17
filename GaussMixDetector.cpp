@@ -362,7 +362,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 		for ( j = 0; j < fCols; j++ )
 		{
 			count = 0;
-			w = 0;
 			iRGB = j*fChannels;
 			iDev = j*fChannels*fChannels;
 			// !!! why 3 ??
@@ -468,13 +467,11 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				}
 			}
 
-			count = -1;
 			w = tmpW[0];
 
 			for ( k = 1; k < tmpK; k++ )
 			{
 				if ( w >= (1-Cf) ) {
-					count = k;
 					break;
 				}
 
