@@ -47,7 +47,6 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	}
 
 	cv::Mat tmp;
-	ptrType* p;
 	fRows = frame.rows;
 	fCols = frame.cols;
 	fChannels = frame.channels();
@@ -71,7 +70,7 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	{
 		for( int r = 0; r < fRows; r++ )
 		{
-			p = tmp.ptr<double>(r);
+			auto* p = tmp.ptr<double>(r);
 			for( int c = 0; c < fCols*fChannels*fChannels; c++ )
 			{
 				p[c] = ( (c % (fChannels*fChannels)) % (fChannels+1) == 0 ) ? initDeviation : 0;
@@ -104,55 +103,39 @@ inline double normDistrib( double x, double m, double d )
 
 void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 {
-	int i;
-	int j;
-	int motionI;
-	short k;
-	short count;
-	double w;
-	double r;
-
-	const ptrType* ptF;
-	uchar* ptMo;
-	uchar* ptK;
-
 	std::vector<ptrType*> ptM(K);
 	std::vector<ptrType*> ptD(K);
 	std::vector<ptrType*> ptW(K);
 	std::vector<bool> isCurrent(K,false);
 
-	double tmpF;
-	short tmpK;
-
 	double tmpM[K] {};
 	double tmpD[K] {};
 	double tmpW[K] {};
 
-	for( i = 0; i < fRows; i++ )
+	for( int i = 0; i < fRows; i++ )
 	{
-		ptF = fClone.ptr<double>(i);
-		ptMo = motion.ptr<uchar>(i);
-		ptK = currentK.ptr<uchar>(i);
-		for ( k = 0; k < K; k++ )
+		const auto* ptF = fClone.ptr<double>(i);
+		auto* ptMo = motion.ptr<uchar>(i);
+		auto* ptK = currentK.ptr<uchar>(i);
+		for ( short k = 0; k < K; k++ )
 		{
 			ptM[k] = mean[k].ptr<double>(i);
 			ptD[k] = deviation[k].ptr<double>(i);
 			ptW[k] = weight[k].ptr<double>(i);
 		}
-		for ( j = 0; j < fCols*fChannels; j += fChannels )
+		for ( int j = 0; j < fCols*fChannels; j += fChannels )
 		{
-			count = 0;
-			w = 0;
-			tmpF = ptF[j];
-			tmpK = ptK[j];
-			for ( k = 0; k < tmpK; k++ )
+			double tmpF = ptF[j];
+			short tmpK = ptK[j];
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				tmpM[k] = ptM[k][j];
 				tmpD[k] = ptD[k][j];
 				tmpW[k] = ptW[k][j];
 			}
 
-			for ( k = 0; k < tmpK; k++ )
+			short count = 0;
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				isCurrent[k] = false;
 				if (( tmpF < tmpM[k] + tmpD[k] ) && ( tmpF > tmpM[k] - tmpD[k] ))
@@ -185,10 +168,10 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			}
 			else
 			{
-				for ( k = 0; k < tmpK; k++ )
+				for ( short k = 0; k < tmpK; k++ )
 				{
 					if ( isCurrent[k] ) {
-						r = alpha * normDistrib( tmpF, tmpM[k], tmpD[k] );
+						double r = alpha * normDistrib( tmpF, tmpM[k], tmpD[k] );
 						tmpD[k] = sqrt ( (1-r) / 6.25 * tmpD[k] * tmpD[k] + r * (tmpF - tmpM[k]) );
 						tmpM[k] = (1-r) * tmpM[k] + r*tmpF;
 					}
@@ -200,19 +183,21 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 					}
 				}
 			}
-			for ( k = 0; k < tmpK; k++ )
+
+			double w = 0;
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				tmpW[k] = tmpW[k] * (1-alpha) + alpha*int(isCurrent[k]);
 				w += tmpW[k];
 			}
 
-			for ( k = 0; k < tmpK; k++ )
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				tmpW[k] = tmpW[k] / w;
 			}
 
 			w = 0;
-			for ( k = 0; k < tmpK; k++ )
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				w += tmpW[k];
 			}
@@ -223,7 +208,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			while (!noMov)
 			{
 				noMov = true;
-				for ( k = 0; k < tmpK-1; k++ )
+				for ( short k = 0; k < tmpK-1; k++ )
 				{
 					if ( tmpW[k] > tmpW[k+1] )
 					{
@@ -241,23 +226,23 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 				}
 			}
 
-			motionI = j / fChannels;
+			int motionI = j / fChannels;
 
-			count = -1;
+			short count2 = -1;
 			w = tmpW[0];
 
-			for ( k = 1; k < tmpK; k++ )
+			for ( short k = 1; k < tmpK; k++ )
 			{
 				if ( w >= Cf ) {
-					count = k;
+					count2 = k;
 					break;
 				}
 
 				w += tmpW[k];
 			}
-			if ( count != -1 )
+			if ( count2 != -1 )
 			{
-				for ( k = 0; k < count; k++ )
+				for ( short k = 0; k < count2; k++ )
 				{
 					if(isCurrent[k])
 					{
@@ -269,7 +254,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			if( tmpK > 1 )
 			{
 				bool isMotion = true;
-				for ( k = 1; k < tmpK; k++ )
+				for ( short k = 1; k < tmpK; k++ )
 				{
 					if( !(abs(tmpM[0] - tmpM[k]) > T) )
 					{
@@ -285,7 +270,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 			}
 
 			ptK[j] = static_cast<uchar>(tmpK);
-			for ( k = 0; k < tmpK; k++ )
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				ptM[k][j] = tmpM[k];
 				ptD[k][j] = tmpD[k];
@@ -321,25 +306,11 @@ inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 {
-	int i;
-	int j;
-	int c;
-	int cd;
-	int iRGB;
-	int iDev;
-	short k;
-	short count;
-	double w;
-
-	const ptrType* ptF;
-	uchar* ptMo;
-	uchar* ptK;
-
 	ptrType* ptM[K];
 	ptrType* ptD[K];
 	ptrType* ptW[K];
 	bool isCurrent[K] {};
-	int tmpK;
+
 
 	cv::Matx13d tmpF;
 	cv::Matx13d delta[K];
@@ -348,35 +319,36 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 	cv::Matx33d dhelp;
 	double tmpW[K] {};
 
-	for( i = 0; i < fRows; i++ )
+	for( int i = 0; i < fRows; i++ )
 	{
-		ptF = fClone.ptr<double>(i);
-		ptMo = motion.ptr<uchar>(i);
-		ptK = currentK.ptr<uchar>(i);
-		for ( k = 0; k < K; k++ )
+		const auto* ptF = fClone.ptr<double>(i);
+		auto* ptMo = motion.ptr<uchar>(i);
+		auto* ptK = currentK.ptr<uchar>(i);
+		for ( short k = 0; k < K; k++ )
 		{
 			ptM[k] = mean[k].ptr<double>(i);
 			ptD[k] = deviation[k].ptr<double>(i);
 			ptW[k] = weight[k].ptr<double>(i);
 		}
-		for ( j = 0; j < fCols; j++ )
+
+		int tmpK = 0;
+		for ( int j = 0; j < fCols; j++ )
 		{
-			count = 0;
-			iRGB = j*fChannels;
-			iDev = j*fChannels*fChannels;
+			const int iRGB = j*fChannels;
+			const int iDev = j*fChannels*fChannels;
 			// !!! why 3 ??
-			for ( c = 0; c < 3; c++ )
+			for ( int c = 0; c < 3; c++ )
 			{
 				tmpF(c) = ptF[iRGB + c];
 			}
 			tmpK = ptK[j];
 
-			for ( k = 0; k < tmpK; k++ )
+			for ( short k = 0; k < tmpK; k++ )
 			{
-				for ( c = 0; c < 3; c++ )
+				for ( int c = 0; c < 3; c++ )
 				{
 					tmpM[k](c) = ptM[k][iRGB + c];
-					for ( cd = 0; cd < 3; cd++ )
+					for ( int cd = 0; cd < 3; cd++ )
 					{
 						tmpD[k](c,cd) = ptD[k][iDev + c*fChannels + cd];
 					}
@@ -385,7 +357,8 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				delta[k] = tmpF - tmpM[k];
 			}
 
-			for ( k = 0; k < tmpK; k++ )
+			short count = 0;
+			for ( short k = 0; k < tmpK; k++ )
 			{
 				isCurrent[k] = false;
 				if ( Mahalanobis(delta[k], tmpD[k]) < sqrt( cv::trace(tmpD[k]) ) )
@@ -417,43 +390,40 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			}
 			else
 			{
-				for ( k = 0; k < tmpK; k++ )
+				for ( short k = 0; k < tmpK; k++ )
 				{
 					if ( isCurrent[k] )
 					{
-						w = (alpha / tmpW[k]);
+						const double w = (alpha / tmpW[k]);
 						tmpM[k] += w * delta[k];
 						tmpD[k] += std::min( 20*alpha, w ) * ( delta[k].t()*delta[k] );
 					}
 				}
 			}
-			w = 0;
-			for ( k = 0; k < tmpK; k++ )
-			{
-				tmpW[k] = tmpW[k] * (1-alpha) + alpha*int(isCurrent[k]);
-				w += tmpW[k];
-			}
 
-			for ( k = 0; k < tmpK; k++ )
 			{
-				tmpW[k] = tmpW[k] / w;
-			}
+				double w = 0;
+				for ( short k = 0; k < tmpK; k++ )
+				{
+					tmpW[k] = tmpW[k] * (1-alpha) + alpha*int(isCurrent[k]);
+					w += tmpW[k];
+				}
 
-			w = 0;
-			for ( k = 0; k < tmpK; k++ )
-			{
-				w += tmpW[k];
+				for ( short k = 0; k < tmpK; k++ )
+				{
+					tmpW[k] = tmpW[k] / w;
+				}
 			}
 
 			bool noMov = false;
 			while (!noMov)
 			{
 				noMov = true;
-				for ( k = 0; k < tmpK-1; k++ )
+				for ( short k = 0; k < tmpK-1; k++ )
 				{
 					if ( tmpW[k] < tmpW[k+1] )
 					{
-						w = tmpW[k];
+						double w = tmpW[k];
 						tmpW[k] = tmpW[k+1];
 						tmpW[k+1] = w;
 						delta[0] = tmpM[k];
@@ -467,17 +437,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				}
 			}
 
-			w = tmpW[0];
-
-			for ( k = 1; k < tmpK; k++ )
-			{
-				if ( w >= (1-Cf) ) {
-					break;
-				}
-
-				w += tmpW[k];
-			}
-
 			bool FG = sqrt(delta[0].dot(delta[0])) > T;
 
 			if( FG )
@@ -486,12 +445,12 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			}
 
 			ptK[j] = static_cast<uchar>(tmpK);
-			for ( k = 0; k < tmpK; k++ )
+			for ( short k = 0; k < tmpK; k++ )
 			{
-				for ( c = 0; c < fChannels; c++ )
+				for ( int c = 0; c < fChannels; c++ )
 				{
 					ptM[k][iRGB + c] = tmpM[k](c);
-					for ( cd = 0; cd < fChannels; cd++ )
+					for ( int cd = 0; cd < fChannels; cd++ )
 					{
 						ptD[k][iDev + c*fChannels + cd] = tmpD[k](c,cd);
 					}
