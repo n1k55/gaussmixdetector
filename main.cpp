@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 	else
 	{
 		cap.open(inputName);
-		cap.set(cv::CAP_PROP_CONVERT_RGB, false);
+		cap.set(cv::CAP_PROP_CONVERT_RGB, static_cast<double>(false));
 		cap.set(cv::CAP_PROP_POS_FRAMES, 0);
 	}
 	if (!cap.isOpened())
