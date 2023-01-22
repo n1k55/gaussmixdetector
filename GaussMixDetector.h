@@ -42,8 +42,8 @@ public:
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
 
 private:
-	void Init( const cv::Mat& );
-	void getpwUpdateAndMotion( cv::Mat& );
-	void getpwUpdateAndMotionRGB( cv::Mat& );
+	void Init(const cv::Mat& frame);
+	void getpwUpdateAndMotion(cv::Mat& motion);
+	void getpwUpdateAndMotionRGB(cv::Mat& motion);
 };
 
