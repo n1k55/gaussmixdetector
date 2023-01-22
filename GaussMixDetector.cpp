@@ -286,13 +286,6 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 	}
 }
 
-double toDouble( cv::MatExpr M )
-{
-	cv::Mat A(M);
-	assert(A.rows == 1 || A.cols == 1);
-	return A.at<double>(0);
-}
-
 inline double Mahalanobis(cv::Matx13d delta, cv::Matx33d C)
 {
 	C = C.inv();
