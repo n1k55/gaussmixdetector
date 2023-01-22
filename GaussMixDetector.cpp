@@ -87,14 +87,6 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	firstFrame = false;
 }
 
-inline double normDistrib( int x, double m, double d )
-{
-	double tmp = (double(x) - m) / d;
-	tmp *= tmp;
-	tmp = exp( -tmp/2 );
-	return tmp / d / sqrt(2*CV_PI);
-}
-
 inline double normDistrib( double x, double m, double d )
 {
 	double tmp = (x - m) / d;
@@ -295,12 +287,6 @@ inline double Mahalanobis(cv::Matx13d delta, cv::Matx33d C)
 inline double Mahalanobis( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 {
 	return Mahalanobis( (x-m), C );
-}
-
-inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
-{
-	double mah = Mahalanobis( x, m, C );
-	return exp( - mah / 2 ) / 2 / CV_PI / sqrt(2*CV_PI); // det;
 }
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
