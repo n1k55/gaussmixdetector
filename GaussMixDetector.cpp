@@ -1,5 +1,7 @@
 #include "GaussMixDetector.h"
 
+#include <array>
+
 #include <opencv2/imgproc.hpp>
 
 const static cv::Mat smCircle = (cv::Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0,
@@ -108,9 +110,9 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 	std::vector<ptrType*> ptW(K);
 	std::vector<bool> isCurrent(K,false);
 
-	double tmpM[K] {};
-	double tmpD[K] {};
-	double tmpW[K] {};
+	std::array<double, K> tmpM {};
+	std::array<double, K> tmpD {};
+	std::array<double, K> tmpW {};
 
 	for( int i = 0; i < fRows; i++ )
 	{
@@ -306,18 +308,19 @@ inline double normDistrib3( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 {
-	ptrType* ptM[K];
-	ptrType* ptD[K];
-	ptrType* ptW[K];
-	bool isCurrent[K] {};
+	std::array<ptrType*, K> ptM {};
+	std::array<ptrType*, K> ptD {};
+	std::array<ptrType*, K> ptW {};
 
+	std::array<bool, K> isCurrent {};
 
 	cv::Matx13d tmpF;
-	cv::Matx13d delta[K];
-	cv::Matx13d tmpM[K];
-	cv::Matx33d tmpD[K];
+	std::array<cv::Matx13d, K> delta {};
+	std::array<cv::Matx13d, K> tmpM {};
+	std::array<cv::Matx33d, K> tmpD {};
 	cv::Matx33d dhelp;
-	double tmpW[K] {};
+
+	std::array<double, K> tmpW {};
 
 	for( int i = 0; i < fRows; i++ )
 	{
