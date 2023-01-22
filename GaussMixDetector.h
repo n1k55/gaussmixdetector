@@ -35,17 +35,15 @@ class GaussMixDetector
 	typedef double ptrType;				// 'Mat' pointer type
 
 public:
-	GaussMixDetector ( void );
+	GaussMixDetector();
 	GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT, double _Cf = defaultCf );
+	~GaussMixDetector() = default;
+
+	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
 
 private:
 	void Init( const cv::Mat& );
 	void getpwUpdateAndMotion( cv::Mat& );
 	void getpwUpdateAndMotionRGB( cv::Mat& );
-
-public:
-	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
-
-	~GaussMixDetector ( void ) = default;
 };
 
