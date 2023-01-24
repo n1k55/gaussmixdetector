@@ -150,7 +150,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 					tmpD.at(tmpK) = initDeviation;
 					tmpW.at(tmpK) = 0;
 					isCurrent[tmpK] = true;
-					tmpK = tmpK + 1;
+					tmpK++;
 				}
 				else
 				{
