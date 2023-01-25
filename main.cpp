@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#include <cassert>
+#include <iostream>
 
 #include "GaussMixDetector.h"
 

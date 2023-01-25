@@ -1,6 +1,7 @@
 #include "GaussMixDetector.h"
 
 #include <array>
+#include <cassert>
 
 #include <opencv2/imgproc.hpp>
 
