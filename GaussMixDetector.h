@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include <opencv2/core/mat.hpp>
@@ -14,7 +15,7 @@ class GaussMixDetector
 	// should figure out which parameters can and cannot be changed 'on-the-fly' and
 	// add 'set parameter x' function(s) to allow adjusting the model without reinitializing
 
-	static const short K = 3;			// limit number of Gaussians per pixel
+	static const int_fast16_t K = 3;			// limit number of Gaussians per pixel
 	double alpha;						// learning coefficient
 	double T;							// background-foreground threshold
 	double initDeviation;				// initial 2.5*deviation of all Gaussians
