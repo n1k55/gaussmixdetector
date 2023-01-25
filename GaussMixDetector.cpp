@@ -5,21 +5,6 @@
 #include <opencv2/imgproc.hpp>
 
 
-GaussMixDetector::GaussMixDetector()
-{
-	historyLength = defaultHistory;
-	initDeviation = defaultDeviation;
-	alpha = double(1) / double(historyLength);
-	T = defaultT;
-	Cf = defaultCf;
-
-	firstFrame = true;
-
-	fRows = 0;
-	fCols = 0;
-	fChannels = 0;
-}
-
 GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T, double _Cf )
 {
 	historyLength = _historyLength;
