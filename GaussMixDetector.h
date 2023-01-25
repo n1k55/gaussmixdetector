@@ -25,7 +25,6 @@ class GaussMixDetector
 	cv::Mat fClone;
 
 	bool firstFrame { true };									// first step flag
-	unsigned int historyLength { defaultHistory };				// learning history length
 
 	std::vector <cv::Mat> mean;
 	std::vector <cv::Mat> weight;

@@ -6,18 +6,11 @@
 
 
 GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T, double _Cf )
+	: alpha { 1 / static_cast<double>(_historyLength) }
+	, T { _T }
+	, initDeviation { _initDeviation }
+	, Cf { _Cf }
 {
-	historyLength = _historyLength;
-	initDeviation = _initDeviation;
-	alpha = double(1) / double(_historyLength);
-	T = _T;
-	Cf = _Cf;
-
-	firstFrame = true;
-
-	fRows = 0;
-	fCols = 0;
-	fChannels = 0;
 }
 
 void GaussMixDetector::Init( const cv::Mat& frame )
