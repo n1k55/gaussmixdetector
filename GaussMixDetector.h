@@ -4,10 +4,10 @@
 
 #include <opencv2/core/mat.hpp>
 
-#define defaultT 0.1
-#define defaultHistory 100
-#define defaultDeviation 40.0
-#define defaultCf 0.05
+constexpr double defaultT { 0.1 };
+constexpr unsigned int defaultHistory { 100U };
+constexpr double defaultDeviation { 40.0 };
+constexpr double defaultCf { 0.05 };
 
 class GaussMixDetector
 {
@@ -25,7 +25,7 @@ class GaussMixDetector
 
 	bool firstFrame;					// first step flag
 	unsigned int historyLength;			// learning history length
-	
+
 	std::vector <cv::Mat> mean;
 	std::vector <cv::Mat> weight;
 	std::vector <cv::Mat> deviation;
