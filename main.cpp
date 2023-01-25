@@ -6,11 +6,6 @@
 #include <opencv2/videoio.hpp>
 
 
-#ifndef LOG_TIME_ALL
-	#define LOG_TIME_ALL FALSE
-#endif
-
-
 int main(int argc, char** argv)
 {
 	const cv::String keys =
@@ -98,7 +93,7 @@ int main(int argc, char** argv)
 
 	unsigned int total = 0;
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 	LARGE_INTEGER frequency;        // ticks per second
 	LARGE_INTEGER t1, t2;           // ticks
 	double elapsedTimeGauss = 0;
@@ -112,14 +107,14 @@ int main(int argc, char** argv)
 			break;				// check if reached the end
 		}
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&t1);
 #endif
 
 		bg.getMotionPicture(frame, motion);		// get motion data from detector
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 		QueryPerformanceCounter(&t2);
 		t1.QuadPart *= 1000;
 		t2.QuadPart *= 1000;
@@ -145,7 +140,7 @@ int main(int argc, char** argv)
 			break;  // space key to stop the loop
 		}
 	}
-#if defined(LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 	elapsedTimeGauss /= double(total);
 #endif
 
