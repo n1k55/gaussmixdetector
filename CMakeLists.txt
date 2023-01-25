@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 11)
 
 if(CMAKE_VERSION VERSION_GREATER 3.6)
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-header-filter=.*;-checks=*,-fuchsia-default-arguments-calls,-modernize-use-trailing-return-type,-readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers,-hicpp-signed-bitwise,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-bugprone-too-small-loop-variable,-google-runtime-int,-hicpp-no-array-decay,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-default-arguments-declarations,-google-runtime-references,-hicpp-special-member-functions,-cppcoreguidelines-special-member-functions,-llvm-header-guard,-google-readability-todo")
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-header-filter=.*;-checks=*,-fuchsia-default-arguments-calls,-modernize-use-trailing-return-type,-readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers,-hicpp-signed-bitwise,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-google-runtime-int,-hicpp-no-array-decay,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-fuchsia-default-arguments-declarations,-google-runtime-references,-hicpp-special-member-functions,-cppcoreguidelines-special-member-functions,-llvm-header-guard,-google-readability-todo")
 endif()
 
 project( "gaussmixdetector" LANGUAGES CXX )

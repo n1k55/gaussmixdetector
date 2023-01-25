@@ -309,7 +309,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			ptW.at(k) = weight[k].ptr<double>(i);
 		}
 
-		int tmpK = 0;
+		short tmpK = 0;
 		for ( int j = 0; j < fCols; j++ )
 		{
 			const int iRGB = j*fChannels;
@@ -357,7 +357,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 					tmpM.at(tmpK) = tmpF;
 					tmpD.at(tmpK) = initDeviation*cv::Matx33d::eye();
 					tmpW.at(tmpK) = alpha;
-					tmpK = tmpK + 1;
+					tmpK++;
 				}
 				else
 				{
