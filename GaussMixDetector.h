@@ -37,7 +37,6 @@ class GaussMixDetector
 public:
 	GaussMixDetector() = default;
 	explicit GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT, double _Cf = defaultCf );
-	~GaussMixDetector() = default;
 
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup = true );
 
