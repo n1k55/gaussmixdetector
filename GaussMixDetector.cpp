@@ -4,11 +4,6 @@
 
 #include <opencv2/imgproc.hpp>
 
-const static cv::Mat smCircle = (cv::Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0,
-														  0, 1, 1, 1, 0,
-														  1, 1, 1, 1, 1,
-														  0, 1, 1, 1, 0,
-														  0, 0, 1, 0, 0);
 
 GaussMixDetector::GaussMixDetector()
 {
@@ -492,6 +487,12 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 	// optional erode + dilate processing of the motion image
 	if (cleanup)
 	{
+		// mb use const static cv::Mat smCircle = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5,5));
+		const static cv::Mat smCircle = (cv::Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0,
+																  0, 1, 1, 1, 0,
+																  1, 1, 1, 1, 1,
+																  0, 1, 1, 1, 0,
+																  0, 0, 1, 0, 0);
 		cv::erode(motion, motion, smCircle);
 		cv::dilate(motion, motion, smCircle);
 	}
