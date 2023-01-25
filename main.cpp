@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 	// if videofile opened it means it has a valid extension
 	if (!camera)
 	{
-		size_t lastdot = inputName.find_last_of(".");
+		size_t lastdot = inputName.find_last_of('.');
 		assert(lastdot != std::string::npos);
 		rawName = inputName.substr(0, lastdot);     // cut off the extension
 	}
