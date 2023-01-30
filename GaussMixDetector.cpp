@@ -177,18 +177,9 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 				{
 					if ( tmpW.at(k) > tmpW.at(k+1) )
 					{
-						// TODO: use swap
-						w = tmpW.at(k);
-						tmpW.at(k) = tmpW.at(k+1);
-						tmpW.at(k+1) = w;
-
-						w = tmpM.at(k);
-						tmpM.at(k) = tmpM.at(k+1);
-						tmpM.at(k+1) = w;
-
-						w = tmpD.at(k);
-						tmpD.at(k) = tmpD.at(k+1);
-						tmpD.at(k+1) = w;
+						std::swap(tmpW.at(k), tmpW.at(k+1));
+						std::swap(tmpM.at(k), tmpM.at(k+1));
+						std::swap(tmpD.at(k), tmpD.at(k+1));
 
 						noMov = false;
 					}
@@ -378,18 +369,9 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				{
 					if ( tmpW.at(k) < tmpW.at(k+1) )
 					{
-						//TODO: use swap
-						double w = tmpW.at(k);
-						tmpW.at(k) = tmpW.at(k+1);
-						tmpW.at(k+1) = w;
-
-						delta[0] = tmpM.at(k);
-						tmpM.at(k) = tmpM.at(k+1);
-						tmpM.at(k+1) = delta[0];
-
-						dhelp = tmpD.at(k);
-						tmpD.at(k) = tmpD.at(k+1);
-						tmpD.at(k+1) = dhelp;
+						std::swap(tmpW.at(k), tmpW.at(k+1));
+						cv::swap(tmpM.at(k), tmpM.at(k+1));
+						cv::swap(tmpD.at(k), tmpD.at(k+1));
 
 						noMov = false;
 					}
