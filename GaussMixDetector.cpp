@@ -197,28 +197,26 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 
 			int motionI = j / fChannels;
 
-			int_fast16_t count2 = -1;
+			int_fast16_t count2 = 0;
 			w = tmpW.at(0);
 
-			for ( int_fast16_t k = 1; k < tmpK; k++ )
+			for ( count2 = 1; count2 < tmpK; count2++ )
 			{
 				if ( w >= Cf ) {
-					count2 = k;
 					break;
 				}
 
-				w += tmpW.at(k);
+				w += tmpW.at(count2);
 			}
-			if ( count2 != -1 )
+
+			for ( int_fast16_t k = 0; k < count2; k++ )
 			{
-				for ( int_fast16_t k = 0; k < count2; k++ )
+				if(isCurrent[k])
 				{
-					if(isCurrent[k])
-					{
-						ptMo[motionI] = 255;
-					}
+					ptMo[motionI] = 255;
 				}
 			}
+
 
 			if( tmpK > 1 )
 			{
