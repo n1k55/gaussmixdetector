@@ -15,7 +15,7 @@ class GaussMixDetector
 	// should figure out which parameters can and cannot be changed 'on-the-fly' and
 	// add 'set parameter x' function(s) to allow adjusting the model without reinitializing
 
-	static constexpr int_fast16_t K { 3 };						// limit number of Gaussians per pixel
+	static constexpr uchar K { 3U };						// limit number of Gaussians per pixel
 	double alpha { 1 / static_cast<double>(defaultHistory) };	// learning coefficient
 	double T { defaultT };										// background-foreground threshold
 	double initDeviation { defaultDeviation };					// initial 2.5*deviation of all Gaussians
