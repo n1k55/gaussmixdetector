@@ -1,14 +1,10 @@
-﻿#include <iostream>
-
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
+﻿#include <cassert>
+#include <iostream>
 
 #include "GaussMixDetector.h"
 
-
-#ifndef LOG_TIME_ALL
-	#define LOG_TIME_ALL FALSE
-#endif
+#include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
 
 
 int main(int argc, char** argv)
@@ -41,10 +37,10 @@ int main(int argc, char** argv)
 		inputName = parser.get<cv::String>("@path");
 	}
 
-	int history = parser.get<int>("history");
-	double deviation = parser.get<double>("dev");
-	double T = parser.get<double>("T");
-	double Cf = parser.get<double>("Cf");
+	const auto history = parser.get<int>("history");
+	const auto deviation = parser.get<double>("dev");
+	const auto T = parser.get<double>("T");
+	const auto Cf = parser.get<double>("Cf");
 
 	if (!parser.check())
 	{
@@ -63,13 +59,17 @@ int main(int argc, char** argv)
 		// try a couple of camera indexes
 		// (there's no solid method for finding cameras in OpenCV as of now)
 		if ( !cap.open(0) )
+		{
 			if ( !cap.open(1) )
+			{
 				cap.open(700);
+			}
+		}
 	}
 	else
 	{
 		cap.open(inputName);
-		cap.set(cv::CAP_PROP_CONVERT_RGB, false);
+		cap.set(cv::CAP_PROP_CONVERT_RGB, static_cast<double>(false));
 		cap.set(cv::CAP_PROP_POS_FRAMES, 0);
 	}
 	if (!cap.isOpened())
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 	// if videofile opened it means it has a valid extension
 	if (!camera)
 	{
-		size_t lastdot = inputName.find_last_of(".");
+		size_t lastdot = inputName.find_last_of('.');
 		assert(lastdot != std::string::npos);
 		rawName = inputName.substr(0, lastdot);     // cut off the extension
 	}
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 
 	unsigned int total = 0;
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 	LARGE_INTEGER frequency;        // ticks per second
 	LARGE_INTEGER t1, t2;           // ticks
 	double elapsedTimeGauss = 0;
@@ -103,16 +103,19 @@ int main(int argc, char** argv)
 	for (; ; )
 	{
 		cap >> frame;							// read the source
-		if (frame.empty()) break;				// check if reached the end
+		if (frame.empty())
+		{
+			break;				// check if reached the end
+		}
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 		QueryPerformanceFrequency(&frequency);
 		QueryPerformanceCounter(&t1);
 #endif
 
 		bg.getMotionPicture(frame, motion);		// get motion data from detector
 
-#if defined (LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 		QueryPerformanceCounter(&t2);
 		t1.QuadPart *= 1000;
 		t2.QuadPart *= 1000;
@@ -123,18 +126,22 @@ int main(int argc, char** argv)
 
 		// Writing motion video
 		if (!vidmotion.isOpened())
-			vidmotion.open(rawName + "_motion" + videoExt, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
+		{
+			vidmotion.open(std::string(rawName).append("_motion").append(videoExt),
+				cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
+		}
 		vidmotion << motion;
-
 
 		cv::imshow("Frame", frame);
 
-
 		total++;
 
-		if (cv::waitKey(15) == 32) break;  // space key to stop the loop
+		if (cv::waitKey(15) == 32)
+		{
+			break;  // space key to stop the loop
+		}
 	}
-#if defined(LOG_TIME_ALL) && LOG_TIME_ALL
+#ifdef LOG_TIME_ALL
 	elapsedTimeGauss /= double(total);
 #endif
 
