@@ -128,7 +128,8 @@ int main(int argc, char** argv)
 		if (!vidmotion.isOpened())
 		{
 			vidmotion.open(std::string(rawName).append("_motion").append(videoExt),
-				cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 20, cv::Size(frame.cols, frame.rows), false);
+				cv::VideoWriter::fourcc('M', 'P', '4', 'V'), camera ? 20 : cap.get(cv::CAP_PROP_FPS),
+				cv::Size(frame.cols, frame.rows), false);
 		}
 		vidmotion << motion;
 
