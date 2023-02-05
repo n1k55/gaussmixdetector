@@ -30,7 +30,7 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	frame.convertTo( tmp, CV_MAKETYPE( CVType, fChannels ) );
 
 	mean.push_back( tmp );
-	weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( 1 ));
+	weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( alpha ));
 
 	for ( int k = 1; k < K; k++ )
 	{
