@@ -238,15 +238,57 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 	}
 }
 
-inline double Mahalanobis(cv::Matx13d delta, cv::Matx33d C)
+template <int channels>
+double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double, channels, channels>& C)
 {
-	C = C.inv();
-	return (delta * C).dot(delta);
+	return (x * C.inv()).dot(x);
 }
 
-inline double Mahalanobis( cv::Matx13d x, cv::Matx13d m, cv::Matx33d C )
+template <>
+double Mahalanobis<2>(const cv::Matx12d& x, const cv::Matx22d& C)
 {
-	return Mahalanobis( (x-m), C );
+	// Cholesky decomposition
+	std::array<double, 3> L {};
+	L.at(0) = C(0, 0);
+	L.at(1) = C(1, 0) / L.at(0);
+	L.at(2) = C(1, 1) - L.at(1) * C(1, 0);
+
+	// Mahalanobis vector
+	double y = x(1) - x(0) * L.at(1);
+	y *= y;
+	y /= L.at(2);
+	y += x(0) * x(0) / L.at(0);
+
+	return y;
+}
+
+template <>
+double Mahalanobis<3>(const cv::Matx13d& x, const cv::Matx33d& C)
+{
+	// Cholesky decomposition
+	std::array<double, 6> L {};
+	L.at(0) = C(0, 0);
+	L.at(1) = C(1, 0) / L.at(0);
+	L.at(2) = C(1, 1) - L.at(1) * C(1, 0);
+	L.at(3) = C(2, 0) / L.at(0);
+	L.at(4) = (C(2, 1) - L.at(3) * C(1, 0)) / L.at(2);
+	L.at(5) = C(2, 2) - L.at(3) * C(2, 0) - L.at(4) * L.at(4) * L.at(2);
+
+	// Mahalanobis vector
+	std::array<double, 3> y {};
+
+	y.at(0) = x(0) * x(0) / L.at(0);
+	y.at(1) = x(1) - x(0) * L.at(1);
+	y.at(1) *= y.at(1);
+	y.at(1) /= L.at(2);
+	y.at(2) = x(2) - L.at(3) * x(0) - L.at(4) * (x(1) - x(0) * L.at(1));
+	y.at(2) *= y.at(2);
+	y.at(2) /= L.at(5);
+
+	y.at(0) += y.at(1);
+	y.at(0) += y.at(2);
+
+	return y.at(0);
 }
 
 void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
