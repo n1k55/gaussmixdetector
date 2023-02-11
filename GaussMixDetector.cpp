@@ -446,7 +446,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	}
 }
 
-void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, bool cleanup )
+void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 {
 	if (frame.empty())
 	{
@@ -561,18 +561,5 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 			break;
 		default:
 			throw std::invalid_argument("Accepted number of channels: 1 through 3.");
-	}
-
-	// optional erode + dilate processing of the motion image
-	if (cleanup)
-	{
-		// mb use const static cv::Mat smCircle = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5,5));
-		const static cv::Mat smCircle = (cv::Mat_<uchar>(5, 5) << 0, 0, 1, 0, 0,
-																  0, 1, 1, 1, 0,
-																  1, 1, 1, 1, 1,
-																  0, 1, 1, 1, 0,
-																  0, 0, 1, 0, 0);
-		cv::erode(motion, motion, smCircle);
-		cv::dilate(motion, motion, smCircle);
 	}
 }
