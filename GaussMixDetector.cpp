@@ -66,7 +66,8 @@ inline double normDistrib( double x, double m, double d )
 	return tmp / d / sqrt(2*CV_PI);
 }
 
-void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
+template <typename matPtrType>
+void GaussMixDetector::getpwUpdateAndMotion(const cv::Mat& frame, cv::Mat& motion)
 {
 	std::vector<ptrType*> ptM(K);
 	std::vector<ptrType*> ptD(K);
@@ -79,7 +80,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 
 	for( int i = 0; i < fRows; i++ )
 	{
-		const auto* ptF = fClone.ptr<double>(i);
+		const auto* ptF = frame.ptr<matPtrType>(i);
 		auto* ptMo = motion.ptr<uchar>(i);
 		auto* ptK = currentK.ptr<uchar>(i);
 		for ( uchar k = 0U; k < K; k++ )
@@ -90,7 +91,7 @@ void GaussMixDetector::getpwUpdateAndMotion( cv::Mat& motion )
 		}
 		for ( int j = 0; j < fCols*fChannels; j += fChannels )
 		{
-			double tmpF = ptF[j];
+			double tmpF = static_cast<double>(ptF[j]);
 			uchar tmpK = ptK[j];
 			for ( uchar k = 0U; k < tmpK; k++ )
 			{
@@ -291,7 +292,8 @@ double Mahalanobis<3>(const cv::Matx13d& x, const cv::Matx33d& C)
 	return y.at(0);
 }
 
-void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
+template <typename matPtrType, int channels>
+void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion)
 {
 	std::array<ptrType*, K> ptM {};
 	std::array<ptrType*, K> ptD {};
@@ -299,17 +301,17 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 
 	std::array<bool, K> isCurrent {};
 
-	cv::Matx13d tmpF;
-	std::array<cv::Matx13d, K> delta {};
-	std::array<cv::Matx13d, K> tmpM {};
-	std::array<cv::Matx33d, K> tmpD {};
-	cv::Matx33d dhelp;
+	cv::Matx<double, 1, channels> tmpF;
+	std::array<cv::Matx<double, 1, channels>, K> delta{};
+	std::array<cv::Matx<double, 1, channels>, K> tmpM{};
+	std::array<cv::Matx<double, channels, channels>, K> tmpD{};
+	cv::Matx<double, channels, channels> dhelp;
 
 	std::array<double, K> tmpW {};
 
 	for( int i = 0; i < fRows; i++ )
 	{
-		const auto* ptF = fClone.ptr<double>(i);
+		const auto* ptF = frame.ptr<matPtrType>(i);
 		auto* ptMo = motion.ptr<uchar>(i);
 		auto* ptK = currentK.ptr<uchar>(i);
 		for ( uchar k = 0U; k < K; k++ )
@@ -322,23 +324,23 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 		uchar tmpK = 0U;
 		for ( int j = 0; j < fCols; j++ )
 		{
-			const int iRGB = j*fChannels;
-			const int iDev = j*fChannels*fChannels;
-			// !!! why 3 ??
-			for ( int c = 0; c < 3; c++ )
+			const int iRGB = j*channels;
+			const int iDev = j*channels*channels;
+
+			for (int c = 0; c < channels; c++)
 			{
-				tmpF(c) = ptF[iRGB + c];
+				tmpF(c) = static_cast<double>(ptF[iRGB + c]);
 			}
 			tmpK = ptK[j];
 
 			for ( uchar k = 0U; k < tmpK; k++ )
 			{
-				for ( int c = 0; c < 3; c++ )
+				for ( int c = 0; c < channels; c++ )
 				{
 					tmpM.at(k)(c) = ptM.at(k)[iRGB + c];
-					for ( int cd = 0; cd < 3; cd++ )
+					for ( int cd = 0; cd < channels; cd++ )
 					{
-						tmpD.at(k)(c,cd) = ptD.at(k)[iDev + c*fChannels + cd];
+						tmpD.at(k)(c,cd) = ptD.at(k)[iDev + c*channels + cd];
 					}
 					tmpW.at(k) = ptW.at(k)[j];
 				}
@@ -365,14 +367,14 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 				if ( tmpK < K )
 				{
 					tmpM.at(tmpK) = tmpF;
-					tmpD.at(tmpK) = initDeviation*cv::Matx33d::eye();
+					tmpD.at(tmpK) = initDeviation * cv::Matx<double, channels, channels>::eye();
 					tmpW.at(tmpK) = alpha;
 					tmpK++;
 				}
 				else
 				{
 					tmpM.at(K-1U) = tmpF;
-					tmpD.at(K-1U) = initDeviation*cv::Matx33d::eye();
+					tmpD.at(K-1U) = initDeviation * cv::Matx<double, channels, channels>::eye();
 					tmpW.at(K-1U) = alpha;
 				}
 			}
@@ -430,12 +432,12 @@ void GaussMixDetector::getpwUpdateAndMotionRGB( cv::Mat& motion )
 			ptK[j] = tmpK;
 			for ( uchar k = 0U; k < tmpK; k++ )
 			{
-				for ( int c = 0; c < fChannels; c++ )
+				for ( int c = 0; c < channels; c++ )
 				{
 					ptM.at(k)[iRGB + c] = tmpM.at(k)(c);
-					for ( int cd = 0; cd < fChannels; cd++ )
+					for ( int cd = 0; cd < channels; cd++ )
 					{
-						ptD.at(k)[iDev + c*fChannels + cd] = tmpD.at(k)(c,cd);
+						ptD.at(k)[iDev + c*channels + cd] = tmpD.at(k)(c,cd);
 					}
 					ptW.at(k)[j] = tmpW.at(k);
 				}
@@ -470,19 +472,83 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
 	frame.convertTo( fClone, CV_MAKETYPE(CVType, fChannels) );
 
-	// shouldn't algorithm be universal ??
-	// i.e. you should be able to create the model for R and G channels only
-	if (fChannels == 1)
+	switch (fChannels)
 	{
-		getpwUpdateAndMotion(motion);
-	}
-	else if (fChannels == 3)
-	{
-		getpwUpdateAndMotionRGB(motion);
-	}
-	else
-	{
-		throw std::invalid_argument("Input image has non-standard number of channels.");
+		case 1:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					getpwUpdateAndMotion<uchar>(frame, motion);
+					break;
+				case CV_8S:
+					getpwUpdateAndMotion<schar>(frame, motion);
+					break;
+				case CV_16U:
+					getpwUpdateAndMotion<ushort>(frame, motion);
+					break;
+				case CV_16S:
+					getpwUpdateAndMotion<short>(frame, motion);
+					break;
+				case CV_32S:
+					getpwUpdateAndMotion<int>(frame, motion);
+					break;
+				case CV_32F:
+					getpwUpdateAndMotion<float>(frame, motion);
+					break;
+				case CV_64F:
+					getpwUpdateAndMotion<double>(frame, motion);
+					break;
+			}
+		case 2:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					getpwUpdateAndMotionRGB<uchar, 2>(frame, motion);
+					break;
+				case CV_8S:
+					getpwUpdateAndMotionRGB<schar, 2>(frame, motion);
+					break;
+				case CV_16U:
+					getpwUpdateAndMotionRGB<ushort, 2>(frame, motion);
+					break;
+				case CV_16S:
+					getpwUpdateAndMotionRGB<short, 2>(frame, motion);
+					break;
+				case CV_32S:
+					getpwUpdateAndMotionRGB<int, 2>(frame, motion);
+					break;
+				case CV_32F:
+					getpwUpdateAndMotionRGB<float, 2>(frame, motion);
+					break;
+				case CV_64F:
+					getpwUpdateAndMotionRGB<double, 2>(frame, motion);
+					break;
+			}
+		case 3:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					getpwUpdateAndMotionRGB<uchar, 3>(frame, motion);
+					break;
+				case CV_8S:
+					getpwUpdateAndMotionRGB<schar, 3>(frame, motion);
+					break;
+				case CV_16U:
+					getpwUpdateAndMotionRGB<ushort, 3>(frame, motion);
+					break;
+				case CV_16S:
+					getpwUpdateAndMotionRGB<short, 3>(frame, motion);
+					break;
+				case CV_32S:
+					getpwUpdateAndMotionRGB<int, 3>(frame, motion);
+					break;
+				case CV_32F:
+					getpwUpdateAndMotionRGB<float, 3>(frame, motion);
+					break;
+				case CV_64F:
+					getpwUpdateAndMotionRGB<double, 3>(frame, motion);
+					break;
+			}
 	}
 
 	// optional erode + dilate processing of the motion image
