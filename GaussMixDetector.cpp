@@ -471,6 +471,8 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
 
+	const std::invalid_argument depth_exception("Unknown cv::Mat depth. Accepted depths: \
+		CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F.");
 	switch (fChannels)
 	{
 		case 1:
@@ -497,7 +499,10 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 				case CV_64F:
 					getpwUpdateAndMotion<double>(frame, motion);
 					break;
+				default:
+					throw depth_exception;
 			}
+			break;
 		case 2:
 			switch (frame.depth())
 			{
@@ -522,7 +527,10 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 				case CV_64F:
 					getpwUpdateAndMotionRGB<double, 2>(frame, motion);
 					break;
+				default:
+					throw depth_exception;
 			}
+			break;
 		case 3:
 			switch (frame.depth())
 			{
@@ -547,7 +555,12 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion, 
 				case CV_64F:
 					getpwUpdateAndMotionRGB<double, 3>(frame, motion);
 					break;
+				default:
+					throw depth_exception;
 			}
+			break;
+		default:
+			throw std::invalid_argument("Accepted number of channels: 1 through 3.");
 	}
 
 	// optional erode + dilate processing of the motion image
