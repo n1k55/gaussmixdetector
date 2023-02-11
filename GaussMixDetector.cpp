@@ -305,7 +305,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	std::array<cv::Matx<double, 1, channels>, K> delta{};
 	std::array<cv::Matx<double, 1, channels>, K> tmpM{};
 	std::array<cv::Matx<double, channels, channels>, K> tmpD{};
-	cv::Matx<double, channels, channels> dhelp;
 
 	std::array<double, K> tmpW {};
 
