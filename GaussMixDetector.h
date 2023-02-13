@@ -25,10 +25,10 @@ class GaussMixDetector
 
 	bool firstFrame { true };                                  // first step flag
 
-	std::vector <cv::Mat> mean;
-	std::vector <cv::Mat> weight;
-	std::vector <cv::Mat> deviation;
-	cv::Mat currentK;                                          // current number of Gaussians for each pixel
+	std::vector <cv::Mat> mean {};
+	std::vector <cv::Mat> weight {};
+	std::vector <cv::Mat> deviation {};
+	cv::Mat currentK {};                                        // current number of Gaussians for each pixel
 
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
 
