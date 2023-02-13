@@ -18,7 +18,7 @@ class GaussMixDetector
 	static constexpr uchar K { 3U };                            // limit number of Gaussians per pixel
 	double alpha { 1 / static_cast<double>(defaultHistory) };   // learning coefficient
 	double T { defaultT };                                      // background-foreground threshold
-	double initDeviation { defaultDeviation };                  // initial 2.5*deviation of all Gaussians
+	double initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
 	double Cf { defaultCf };                                    // portion of FG data
 
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };              // frame parameters

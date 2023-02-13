@@ -295,14 +295,24 @@ double Mahalanobis<3>(const cv::Matx13d& x, const cv::Matx33d& C)
 template <typename matPtrType, int channels>
 void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion)
 {
+	// Matx structures hold information accross channels,
+	// e.g. pixelVal holds (B, G, R) values in case
+	// input image is of standard 3-channel RGB type
+
+	// Pixel value from input image (cast to floating point)
+	cv::Matx<double, 1, channels> pixelVal;
+	// Mean value of each Gaussian
+	std::array<cv::Matx<double, 1, channels>*, K> meanVal {};
+	// Covariance matrix of each Gaussian 
+	std::array<cv::Matx<double, channels, channels>*, K> deviationVal {};
+
+	// Weight of each Gaussians
 	std::array<double*, K> weightVal {};
 
-	std::array<bool, K> isCurrent {};
-
-	cv::Matx<double, 1, channels> pixelVal;
+	// The distance (difference) between mean and target vector (pixel)
 	std::array<cv::Matx<double, 1, channels>, K> delta {};
-	std::array<cv::Matx<double, 1, channels>*, K> meanVal {};
-	std::array<cv::Matx<double, channels, channels>*, K> deviationVal {};
+	// Whether current pixel 'belongs' to k-th Gaussian
+	std::array<bool, K> isCurrent {};
 
 	for( int i = 0; i < fRows; i++ )
 	{
