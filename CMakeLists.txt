@@ -23,7 +23,7 @@ target_link_libraries( gaussmixdetector ${OpenCV_LIBS} )
 
 target_compile_options(gaussmixdetector PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Weffc++>
 )
 
 set_target_properties(gaussmixdetector PROPERTIES
