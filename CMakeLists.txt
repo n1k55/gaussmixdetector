@@ -25,3 +25,13 @@ target_compile_options(gaussmixdetector PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
 )
+
+set_target_properties(gaussmixdetector PROPERTIES
+    VS_GLOBAL_RunCodeAnalysis true
+
+    # Use visual studio core guidelines
+    VS_GLOBAL_EnableMicrosoftCodeAnalysis true
+
+    # Use clangtidy
+    VS_GLOBAL_EnableClangTidyCodeAnalysis true
+)
