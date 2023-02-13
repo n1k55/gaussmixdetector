@@ -27,7 +27,7 @@ target_compile_options(gaussmixdetector PRIVATE
 )
 
 set_target_properties(gaussmixdetector PROPERTIES
-    VS_GLOBAL_RunCodeAnalysis true
+    VS_GLOBAL_RunCodeAnalysis false
 
     # Use visual studio core guidelines
     VS_GLOBAL_EnableMicrosoftCodeAnalysis true
