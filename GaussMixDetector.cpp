@@ -6,11 +6,10 @@
 #include <opencv2/imgproc.hpp>
 
 
-GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T, double _Cf )
+GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T)
 	: alpha { 1 / static_cast<float>(_historyLength) }
 	, T { static_cast<float>(_T) }
 	, initDeviation { static_cast<float>(_initDeviation) }
-	, Cf { static_cast<float>(_Cf) }
 {
 }
 
@@ -190,7 +189,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	cv::Vec<float, channels> pixelVal;
 	// Mean value of each Gaussian
 	std::array<cv::Vec<float, channels>*, K> meanVal {};
-	
+
 	const int devChannels = channels * (channels + 1) / 2;
 	// Lower triangular of Covariance matrix of each Gaussian
 	std::array<cv::Vec<float, devChannels>*, K> deviationVal {};

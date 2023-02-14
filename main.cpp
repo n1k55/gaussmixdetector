@@ -15,7 +15,6 @@ int main(int argc, char** argv)
 		"{history hist   |100   | history parameter     }"
 		"{dev d          |20.0  | initial deviation     }"
 		"{T t            |30.0  | BF threshold          }"
-		"{Cf cf          |0.1   | portion of FG data    }"
 		"{show preview   |      | enable preview        }";
 
 	cv::CommandLineParser parser(argc, argv, keys);
@@ -41,7 +40,6 @@ int main(int argc, char** argv)
 	const auto history = parser.get<int>("history");
 	const auto deviation = parser.get<double>("dev");
 	const auto T = parser.get<double>("T");
-	const auto Cf = parser.get<double>("Cf");
 	const bool showPreview { parser.has("show") };
 
 	if (!parser.check())
@@ -50,7 +48,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	GaussMixDetector bg(history, deviation, T, Cf);
+	GaussMixDetector bg(history, deviation, T);
 
 	cv::Mat frame;
 	cv::Mat motion;

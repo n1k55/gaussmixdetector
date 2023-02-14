@@ -8,7 +8,6 @@
 constexpr float defaultT { 0.1f };
 constexpr unsigned int defaultHistory { 100U };
 constexpr float defaultDeviation { 40.0f };
-constexpr float defaultCf { 0.05f };
 
 class GaussMixDetector
 {
@@ -19,8 +18,7 @@ class GaussMixDetector
 	float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
 	float T { defaultT };                                      // background-foreground threshold
 	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
-	float Cf { defaultCf };                                    // portion of FG data
-	
+
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
 	bool firstFrame { true };                                  // first step flag
@@ -38,7 +36,7 @@ class GaussMixDetector
 
 public:
 	GaussMixDetector() = default;
-	explicit GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT, double _Cf = defaultCf );
+	explicit GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT);
 
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion );
 
