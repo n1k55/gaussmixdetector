@@ -54,20 +54,8 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	}
 
 	for (int k = 0; k < K; k++)
-		{
+	{
 		deviation.push_back(cv::repeat(pattern, fRows, fCols).reshape(devChannels));
-}
-
-	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
-			, cv::Scalar( 1 ) );
-
-	firstFrame = false;
-}
-			{
-				p[c] = ( (c % (fChannels*fChannels)) % (fChannels+1) == 0 ) ? initDeviation : 0;
-			}
-		}
-		deviation.push_back( tmp );
 	}
 
 	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
@@ -76,26 +64,77 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	firstFrame = false;
 }
 
-template <int channels>
-double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double, channels, channels>& C)
+// Function that extracts a lower triangular matrix from a square matrix
+template <int m>
+cv::Matx<double, 1, m*(m+1)/2> symm_extract(const cv::Matx<double, m, m>& matrix)
 {
-	return (x * C.inv()).dot(x);
+	cv::Matx<double, 1, m * (m + 1) / 2> ltm {};
+	for (int i = 0; i < m; i++)
+	{
+		for (int j = 0; j < i + 1; j++)
+		{
+			ltm(i * (i + 1) / 2 + j) = matrix(i, j);
+		}
+	}
+
+	return ltm;
+}
+
+template <int m>
+cv::Matx<double, 1, m * (m + 1) / 2> symm_eye()
+{
+	cv::Matx<double, 1, m * (m + 1) / 2> ltm {};
+
+	for (int c = 1; c < m + 1; c++)
+	{
+		ltm(c * (c + 1) / 2 - 1) = 1.0;
+	}
+	return ltm;
+}
+
+template <int m>
+cv::Matx<double, 1, m* (m + 1) / 2> symm_delta(const cv::Matx<double, 1, m>& delta)
+{
+	cv::Matx<double, 1, m* (m + 1) / 2> ltm {};
+
+	for (int i = 0; i < m; i++)
+	{
+		for (int j = 0; j < i + 1; j++)
+		{
+			ltm(i * (i + 1) / 2 + j) = delta(i) * delta(j);
+		}
+	}
+	return ltm;
+}
+
+template <int channels>
+double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double, 1, channels*(channels+1)/2>& C)
+{
+	cv::Matx<double, channels, channels> cov {};
+	for (int i = 0; i < channels; i++)
+	{
+		for (int j = 0; j < channels; j++)
+		{
+			cov(i, j) = cov(j, i) = C(i*(i+1)/2 + j);
+		}
+	}
+	return (x * cov.inv()).dot(x);
 }
 
 template <>
 double Mahalanobis<1>(const cv::Matx<double, 1, 1>& x, const cv::Matx<double, 1, 1>& C)
 {
-	return x(0) * x(0) / C(0, 0);
+	return x(0) * x(0) / C(0);
 }
 
 template <>
-double Mahalanobis<2>(const cv::Matx12d& x, const cv::Matx22d& C)
+double Mahalanobis<2>(const cv::Matx12d& x, const cv::Matx13d& C)
 {
 	// Cholesky decomposition
 	std::array<double, 3> L {};
-	L.at(0) = C(0, 0);
-	L.at(1) = C(1, 0) / L.at(0);
-	L.at(2) = C(1, 1) - L.at(1) * C(1, 0);
+	L.at(0) = C(0);
+	L.at(1) = C(1) / L.at(0);
+	L.at(2) = C(2) - L.at(1) * C(1);
 
 	// Mahalanobis vector
 	double y = x(1) - x(0) * L.at(1);
@@ -107,16 +146,16 @@ double Mahalanobis<2>(const cv::Matx12d& x, const cv::Matx22d& C)
 }
 
 template <>
-double Mahalanobis<3>(const cv::Matx13d& x, const cv::Matx33d& C)
+double Mahalanobis<3>(const cv::Matx13d& x, const cv::Matx16d& C)
 {
 	// Cholesky decomposition
 	std::array<double, 6> L {};
-	L.at(0) = C(0, 0);
-	L.at(1) = C(1, 0) / L.at(0);
-	L.at(2) = C(1, 1) - L.at(1) * C(1, 0);
-	L.at(3) = C(2, 0) / L.at(0);
-	L.at(4) = (C(2, 1) - L.at(3) * C(1, 0)) / L.at(2);
-	L.at(5) = C(2, 2) - L.at(3) * C(2, 0) - L.at(4) * L.at(4) * L.at(2);
+	L.at(0) = C(0);
+	L.at(1) = C(1) / L.at(0);
+	L.at(2) = C(2) - L.at(1) * C(1);
+	L.at(3) = C(3) / L.at(0);
+	L.at(4) = (C(4) - L.at(3) * C(1)) / L.at(2);
+	L.at(5) = C(5) - L.at(3) * C(3) - L.at(4) * L.at(4) * L.at(2);
 
 	// Mahalanobis vector
 	std::array<double, 3> y {};
@@ -146,8 +185,10 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	cv::Matx<double, 1, channels> pixelVal;
 	// Mean value of each Gaussian
 	std::array<cv::Matx<double, 1, channels>*, K> meanVal {};
-	// Covariance matrix of each Gaussian 
-	std::array<cv::Matx<double, channels, channels>*, K> deviationVal {};
+	
+	const int devChannels = channels * (channels + 1) / 2;
+	// Lower triangular of Covariance matrix of each Gaussian
+	std::array<cv::Matx<double, 1, devChannels>*, K> deviationVal {};
 
 	// Weight of each Gaussians
 	std::array<double*, K> weightVal {};
@@ -165,7 +206,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 		for ( uchar k = 0U; k < K; k++ )
 		{
 			meanVal.at(k) = mean[k].ptr<cv::Matx<double, 1, channels>>(i);
-			deviationVal.at(k) = deviation[k].ptr<cv::Matx<double, channels, channels>>(i);
+			deviationVal.at(k) = deviation[k].ptr<cv::Matx<double, 1, devChannels>>(i);
 			weightVal.at(k) = weight[k].ptr<double>(i);
 		}
 
@@ -204,14 +245,14 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				if ( currentPixelK < K )
 				{
 					meanVal.at(currentPixelK)[j] = pixelVal;
-					deviationVal.at(currentPixelK)[j] = initDeviation * cv::Matx<double, channels, channels>::eye();
+					deviationVal.at(currentPixelK)[j] = initDeviation * symm_eye<channels>();
 					weightVal.at(currentPixelK)[j] = alpha;
 					currentPixelK++;
 				}
 				else
 				{
 					meanVal.at(K-1U)[j] = pixelVal;
-					deviationVal.at(K-1U)[j] = initDeviation * cv::Matx<double, channels, channels>::eye();
+					deviationVal.at(K-1U)[j] = initDeviation * symm_eye<channels>();
 					weightVal.at(K-1U)[j] = alpha;
 				}
 			}
@@ -223,7 +264,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 					{
 						const double w = (alpha / weightVal.at(k)[j]);
 						meanVal.at(k)[j] += w * delta.at(k);
-						deviationVal.at(k)[j] += std::min( 20*alpha, w ) * ( delta.at(k).t()*delta.at(k) );
+						deviationVal.at(k)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(k));
 					}
 				}
 			}
