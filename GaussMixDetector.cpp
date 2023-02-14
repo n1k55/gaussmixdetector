@@ -247,6 +247,12 @@ double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double
 }
 
 template <>
+double Mahalanobis<1>(const cv::Matx<double, 1, 1>& x, const cv::Matx<double, 1, 1>& C)
+{
+	return x(0) * x(0) / C(0, 0);
+}
+
+template <>
 double Mahalanobis<2>(const cv::Matx12d& x, const cv::Matx22d& C)
 {
 	// Cholesky decomposition
