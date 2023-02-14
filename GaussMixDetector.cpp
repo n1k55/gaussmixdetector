@@ -468,25 +468,25 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 			switch (frame.depth())
 			{
 				case CV_8U:
-					getpwUpdateAndMotion<uchar>(frame, motion);
+					getpwUpdateAndMotionRGB<uchar, 1>(frame, motion);
 					break;
 				case CV_8S:
-					getpwUpdateAndMotion<schar>(frame, motion);
+					getpwUpdateAndMotionRGB<schar, 1>(frame, motion);
 					break;
 				case CV_16U:
-					getpwUpdateAndMotion<ushort>(frame, motion);
+					getpwUpdateAndMotionRGB<ushort, 1>(frame, motion);
 					break;
 				case CV_16S:
-					getpwUpdateAndMotion<short>(frame, motion);
+					getpwUpdateAndMotionRGB<short, 1>(frame, motion);
 					break;
 				case CV_32S:
-					getpwUpdateAndMotion<int>(frame, motion);
+					getpwUpdateAndMotionRGB<int, 1>(frame, motion);
 					break;
 				case CV_32F:
-					getpwUpdateAndMotion<float>(frame, motion);
+					getpwUpdateAndMotionRGB<float, 1>(frame, motion);
 					break;
 				case CV_64F:
-					getpwUpdateAndMotion<double>(frame, motion);
+					getpwUpdateAndMotionRGB<double, 1>(frame, motion);
 					break;
 				default:
 					throw depth_exception;
