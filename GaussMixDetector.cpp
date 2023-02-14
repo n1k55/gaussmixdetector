@@ -59,14 +59,6 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	firstFrame = false;
 }
 
-inline double normDistrib( double x, double m, double d )
-{
-	double tmp = (x - m) / d;
-	tmp *= tmp;
-	tmp = exp( -tmp/2 );
-	return tmp / d / sqrt(2*CV_PI);
-}
-
 template <int channels>
 double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double, channels, channels>& C)
 {
