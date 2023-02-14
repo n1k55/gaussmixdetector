@@ -27,18 +27,14 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	fCols = frame.cols;
 	fChannels = frame.channels();
 
+	// Initialise the first Gaussian's mean with the first frame
 	frame.convertTo( tmp, CV_MAKETYPE( CVType, fChannels ) );
-
 	mean.push_back( tmp );
+
+	// Initialise the first Gaussian's weight with alpha
 	weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( alpha ));
 
-	for ( int k = 1; k < K; k++ )
-	{
-		mean.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, fChannels ), cv::Scalar( 0, 0 ));
-		weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( 0 ));
-	}
-
-	// All the magic below comes down to the task of storing the
+	// The magic below comes down to the task of storing the
 	// symmetrical covariance matrix as lower triangular matrix
 	// for efficiency.
 	// We write and read it from top to bottom, left to right:
@@ -47,24 +43,31 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	const int devChannels = fChannels * (fChannels + 1) / 2;
 	cv::Mat pattern(1, devChannels, CVType, cv::Scalar(0));
 
+	// Initalise the diagonal of all first Gaussian's
+	// cov. matrixes with initial deviation parameter
 	auto* p = pattern.ptr<double>(0);
 	for (int c = 1; c < fChannels+1; c++)
 	{
 		p[c * (c + 1) / 2 - 1] = initDeviation;
 	}
+	deviation.push_back(cv::repeat(pattern, fRows, fCols).reshape(devChannels));
 
-	for (int k = 0; k < K; k++)
+	// Initialise the rest of parameters with zeros
+	for (int k = 1; k < K; k++)
 	{
-		deviation.push_back(cv::repeat(pattern, fRows, fCols).reshape(devChannels));
+		mean.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, fChannels), cv::Scalar(0, 0));
+		weight.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, 1), cv::Scalar(0));
+		deviation.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, devChannels), cv::Scalar(0));
 	}
 
+	// Current number of Gaussians is 1 for all pixels
 	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
 			, cv::Scalar( 1 ) );
 
 	firstFrame = false;
 }
 
-// Function that extracts a lower triangular matrix from a square matrix
+// Extracts a lower triangular matrix from a square matrix
 template <int m>
 cv::Matx<double, 1, m*(m+1)/2> symm_extract(const cv::Matx<double, m, m>& matrix)
 {
@@ -80,6 +83,7 @@ cv::Matx<double, 1, m*(m+1)/2> symm_extract(const cv::Matx<double, m, m>& matrix
 	return ltm;
 }
 
+// Creates a lower triangular identity matrix
 template <int m>
 cv::Matx<double, 1, m * (m + 1) / 2> symm_eye()
 {
@@ -92,6 +96,7 @@ cv::Matx<double, 1, m * (m + 1) / 2> symm_eye()
 	return ltm;
 }
 
+// Creates a lower triangular covariance matrix from variances of 'delta'
 template <int m>
 cv::Matx<double, 1, m* (m + 1) / 2> symm_delta(const cv::Matx<double, 1, m>& delta)
 {
@@ -228,7 +233,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			uchar count = 0U;
 			for ( uchar k = 0U; k < currentPixelK; k++ )
 			{
-				isCurrent.at(k) = false;
+				// this doesn't seem right - need to find a suitable threshold for 'belonging' condition
 				if ( Mahalanobis(delta.at(k), deviationVal.at(k)[j]) < sqrt(cv::trace(deviationVal.at(k)[j])) )
 				{
 					count++;
