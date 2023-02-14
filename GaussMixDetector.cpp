@@ -38,6 +38,7 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 		weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( 0 ));
 	}
 
+	tmp.release();
 	tmp.create( fRows, fCols, CV_MAKETYPE( CVType, fChannels*fChannels ) );
 	for ( int k = 0; k < K; k++ )
 	{
