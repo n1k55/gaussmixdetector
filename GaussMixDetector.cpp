@@ -38,14 +38,31 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 		weight.emplace_back(fRows, fCols, CV_MAKETYPE( CVType, 1 ), cv::Scalar( 0 ));
 	}
 
-	tmp.release();
-	tmp.create( fRows, fCols, CV_MAKETYPE( CVType, fChannels*fChannels ) );
-	for ( int k = 0; k < K; k++ )
+	// All the magic below comes down to the task of storing the
+	// symmetrical covariance matrix as lower triangular matrix
+	// for efficiency.
+	// We write and read it from top to bottom, left to right:
+	// (0, 0), (1, 0), (1, 1), (2, 0), (2, 1), (2, 2), ...
+
+	const int devChannels = fChannels * (fChannels + 1) / 2;
+	cv::Mat pattern(1, devChannels, CVType, cv::Scalar(0));
+
+	auto* p = pattern.ptr<double>(0);
+	for (int c = 1; c < fChannels+1; c++)
 	{
-		for( int r = 0; r < fRows; r++ )
+		p[c * (c + 1) / 2 - 1] = initDeviation;
+	}
+
+	for (int k = 0; k < K; k++)
 		{
-			auto* p = tmp.ptr<double>(r);
-			for( int c = 0; c < fCols*fChannels*fChannels; c++ )
+		deviation.push_back(cv::repeat(pattern, fRows, fCols).reshape(devChannels));
+}
+
+	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
+			, cv::Scalar( 1 ) );
+
+	firstFrame = false;
+}
 			{
 				p[c] = ( (c % (fChannels*fChannels)) % (fChannels+1) == 0 ) ? initDeviation : 0;
 			}
