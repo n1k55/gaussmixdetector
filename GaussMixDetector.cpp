@@ -123,7 +123,7 @@ double Mahalanobis(const cv::Matx<double, 1, channels>& x, const cv::Matx<double
 			cov(i, j) = cov(j, i) = C(i*(i+1)/2 + j);
 		}
 	}
-	return (x * cov.inv()).dot(x);
+	return (x * cov.inv(cv::DECOMP_CHOLESKY)).dot(x);
 }
 
 template <>
