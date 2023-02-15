@@ -5,33 +5,33 @@
 
 #include <opencv2/core/mat.hpp>
 
-constexpr double defaultT { 0.1 };
+constexpr float defaultT { 0.1f };
 constexpr unsigned int defaultHistory { 100U };
-constexpr double defaultDeviation { 40.0 };
-constexpr double defaultCf { 0.05 };
+constexpr float defaultDeviation { 40.0f };
+constexpr float defaultCf { 0.05f };
 
 class GaussMixDetector
 {
 	// should figure out which parameters can and cannot be changed 'on-the-fly' and
 	// add 'set parameter x' function(s) to allow adjusting the model without reinitializing
 
-	static constexpr uchar K { 3U };                            // limit number of Gaussians per pixel
-	double alpha { 1 / static_cast<double>(defaultHistory) };   // learning coefficient
-	double T { defaultT };                                      // background-foreground threshold
-	double initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
-	double Cf { defaultCf };                                    // portion of FG data
+	static constexpr uchar K { 3U };                           // limit number of Gaussians per pixel
+	float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
+	float T { defaultT };                                      // background-foreground threshold
+	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
+	float Cf { defaultCf };                                    // portion of FG data
 
-	int fRows { 0 }, fCols { 0 }, fChannels { 0 };              // frame parameters
+	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
-	bool firstFrame { true };                                   // first step flag
+	bool firstFrame { true };                                  // first step flag
 
 	std::vector <cv::Mat> mean;
 	std::vector <cv::Mat> weight;
 	std::vector <cv::Mat> deviation;
-	cv::Mat currentK;                                           // current number of Gaussians for each pixel
+	cv::Mat currentK;                                          // current number of Gaussians for each pixel
 
-	static const int CVType = CV_64F;                           // type of 'Mat' pixel info
-	typedef double ptrType;                                     // 'Mat' pointer type
+	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
+	typedef float ptrType;                                     // 'Mat' pointer type
 
 public:
 	GaussMixDetector() = default;
