@@ -31,7 +31,6 @@ class GaussMixDetector
 	cv::Mat currentK;                                          // current number of Gaussians for each pixel
 
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
-	typedef float ptrType;                                     // 'Mat' pointer type
 
 public:
 	GaussMixDetector() = default;
