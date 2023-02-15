@@ -267,7 +267,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				float w = 0;
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightVal.at(k)[j] = weightVal.at(k)[j] * (1-alpha) + alpha*int(isCurrent.at(k));
+					weightVal.at(k)[j] = isCurrent.at(k) ? weightVal.at(k)[j] * (1 - alpha) + alpha : weightVal.at(k)[j] * (1 - alpha);
 					w += weightVal.at(k)[j];
 				}
 
