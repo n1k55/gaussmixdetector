@@ -20,7 +20,7 @@ class GaussMixDetector
 	float T { defaultT };                                      // background-foreground threshold
 	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
 	float Cf { defaultCf };                                    // portion of FG data
-
+	
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
 	bool firstFrame { true };                                  // first step flag
@@ -31,6 +31,10 @@ class GaussMixDetector
 	cv::Mat currentK;                                          // current number of Gaussians for each pixel
 
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
+
+	std::array<float, 6> mahThreshold                          // list of threshold values for
+	{ 3.8416f, 5.9858f, 7.8732f                                // determining ownership probability
+	, 6.6564f, 9.245f, 11.6427f };                             // (first row is 95%, second 99%)
 
 public:
 	GaussMixDetector() = default;

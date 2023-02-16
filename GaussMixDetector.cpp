@@ -200,8 +200,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 
 	// The distance (difference) between mean and target vector (pixel)
 	std::array<cv::Vec<float, channels>, K> delta {};
-	// Whether current pixel 'belongs' to k-th Gaussian
-	std::array<bool, K> isCurrent {};
 
 	for( int i = 0; i < fRows; i++ )
 	{
@@ -230,22 +228,20 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				delta.at(k) = pixelVal - meanVal.at(k)[j];
 			}
 
-			uchar count = 0U;
-			for ( uchar k = 0U; k < currentPixelK; k++ )
+			// Whether current pixel 'belongs' to k-th Gaussian
+			std::array<bool, K> isCurrent {};
+
+			uchar owner = 0U;
+			for ( owner = 0U; owner < currentPixelK; owner++ )
 			{
-				// this doesn't seem right - need to find a suitable threshold for 'belonging' condition
-				if ( Mahalanobis(delta.at(k), deviationVal.at(k)[j]) < sqrt(cv::trace(deviationVal.at(k)[j])) )
+				if ( Mahalanobis(delta.at(owner), deviationVal.at(owner)[j]) < mahThreshold.at(channels - 1 + 3) )
 				{
-					count++;
-					isCurrent.at(k) = true;
-				}
-				else
-				{
-					isCurrent.at(k) = false;
+					isCurrent.at(owner) = true;
+					break;
 				}
 			}
 
-			if( count == 0U )
+			if( owner == currentPixelK )
 			{
 				if ( currentPixelK < K )
 				{
@@ -263,15 +259,9 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			}
 			else
 			{
-				for ( uchar k = 0U; k < currentPixelK; k++ )
-				{
-					if ( isCurrent.at(k) )
-					{
-						const float w = (alpha / weightVal.at(k)[j]);
-						meanVal.at(k)[j] += w * delta.at(k);
-						deviationVal.at(k)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(k));
-					}
-				}
+				const float w = (alpha / weightVal.at(owner)[j]);
+				meanVal.at(owner)[j] += w * delta.at(owner);
+				deviationVal.at(owner)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(owner));
 			}
 
 			{
