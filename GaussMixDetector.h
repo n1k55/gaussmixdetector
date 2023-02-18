@@ -5,9 +5,9 @@
 
 #include <opencv2/core/mat.hpp>
 
-constexpr float defaultT { 0.1f };
+constexpr float defaultT { 0.1F };
 constexpr unsigned int defaultHistory { 100U };
-constexpr float defaultDeviation { 40.0f };
+constexpr float defaultDeviation { 40.0F };
 
 class GaussMixDetector
 {
@@ -31,8 +31,8 @@ class GaussMixDetector
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
 
 	std::array<float, 6> mahThreshold                          // list of threshold values for
-	{ 3.8416f, 5.9858f, 7.8732f                                // determining ownership probability
-	, 6.6564f, 9.245f, 11.6427f };                             // (first row is 95%, second 99%)
+	{ 3.8416F, 5.9858F, 7.8732F                                // determining ownership probability
+	, 6.6564F, 9.245F, 11.6427F };                             // (first row is 95%, second 99%)
 
 public:
 	GaussMixDetector() = default;
