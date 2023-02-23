@@ -181,6 +181,13 @@ float Mahalanobis<3>(const cv::Vec3f& x, const cv::Vec6f& C)
 template <typename matPtrType, int channels>
 void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion)
 {
+	if (sizeof(matPtrType) != frame.elemSize1())
+	{
+		// TODO: message wording and error details
+		throw std::runtime_error("Environment specific error. cv::Mat element \
+			size mismatch.");
+	}
+
 	// Vec structures hold information accross channels,
 	// e.g. pixelVal holds (B, G, R) values in case
 	// input image is of standard 3-channel RGB type
