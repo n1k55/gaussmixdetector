@@ -8,6 +8,7 @@
 constexpr float defaultT { 0.1F };
 constexpr unsigned int defaultHistory { 100U };
 constexpr float defaultDeviation { 40.0F };
+constexpr float defaultCf { 0.05F };
 
 class GaussMixDetector
 {
@@ -18,6 +19,7 @@ class GaussMixDetector
 	float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
 	float T { defaultT };                                      // background-foreground threshold
 	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
+	float Cf { defaultCf };
 
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
