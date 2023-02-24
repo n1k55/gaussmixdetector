@@ -1,14 +1,15 @@
-﻿#include <array>
+﻿#include "GaussMixDetector.h"
+
+#include <array>
 #include <cassert>
 #include <iostream>
 #include <string>
 #include <tuple>
 
-#include "GaussMixDetector.h"
-
+#include <opencv2/core/utils/filesystem.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/videoio.hpp>
-#include <opencv2/core/utils/filesystem.hpp>
+
 
 cv::CommandLineParser
 setup_cli_parser(int argc, char** argv)
