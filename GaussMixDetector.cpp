@@ -6,11 +6,10 @@
 #include <opencv2/imgproc.hpp>
 
 
-GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T, double _Cf )
+GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T)
 	: alpha { 1 / static_cast<float>(_historyLength) }
 	, T { static_cast<float>(_T) }
 	, initDeviation { static_cast<float>(_initDeviation) }
-	, Cf { static_cast<float>(_Cf) }
 {
 }
 
@@ -182,6 +181,13 @@ float Mahalanobis<3>(const cv::Vec3f& x, const cv::Vec6f& C)
 template <typename matPtrType, int channels>
 void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion)
 {
+	if (sizeof(matPtrType) != frame.elemSize1())
+	{
+		// TODO: message wording and error details
+		throw std::runtime_error("Environment specific error. cv::Mat element \
+			size mismatch.");
+	}
+
 	// Vec structures hold information accross channels,
 	// e.g. pixelVal holds (B, G, R) values in case
 	// input image is of standard 3-channel RGB type
@@ -190,7 +196,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	cv::Vec<float, channels> pixelVal;
 	// Mean value of each Gaussian
 	std::array<cv::Vec<float, channels>*, K> meanVal {};
-	
+
 	const int devChannels = channels * (channels + 1) / 2;
 	// Lower triangular of Covariance matrix of each Gaussian
 	std::array<cv::Vec<float, devChannels>*, K> deviationVal {};
@@ -268,7 +274,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				float w = 0;
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightVal.at(k)[j] = weightVal.at(k)[j] * (1-alpha) + alpha*int(isCurrent.at(k));
+					weightVal.at(k)[j] = isCurrent.at(k) ? weightVal.at(k)[j] * (1 - alpha) + alpha : weightVal.at(k)[j] * (1 - alpha);
 					w += weightVal.at(k)[j];
 				}
 
@@ -332,8 +338,11 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
 
-	const std::invalid_argument depth_exception("Unknown cv::Mat depth. Accepted depths: \
+	auto make_depth_exception = [] {
+		return std::invalid_argument("Unknown cv::Mat depth. Accepted depths: \
 		CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F.");
+	};
+
 	switch (fChannels)
 	{
 		case 1:
@@ -361,7 +370,7 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 					getpwUpdateAndMotionRGB<double, 1>(frame, motion);
 					break;
 				default:
-					throw depth_exception;
+					throw make_depth_exception();
 			}
 			break;
 		case 2:
@@ -389,7 +398,7 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 					getpwUpdateAndMotionRGB<double, 2>(frame, motion);
 					break;
 				default:
-					throw depth_exception;
+					throw make_depth_exception();
 			}
 			break;
 		case 3:
@@ -417,7 +426,7 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 					getpwUpdateAndMotionRGB<double, 3>(frame, motion);
 					break;
 				default:
-					throw depth_exception;
+					throw make_depth_exception();
 			}
 			break;
 		default:
