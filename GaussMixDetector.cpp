@@ -39,8 +39,8 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	// We write and read it from top to bottom, left to right:
 	// (0, 0), (1, 0), (1, 1), (2, 0), (2, 1), (2, 2), ...
 
-	const int devChannels = fChannels * (fChannels + 1) / 2;
-	cv::Mat pattern(1, devChannels, CVType, cv::Scalar(0));
+	const int covChannels = fChannels * (fChannels + 1) / 2;
+	cv::Mat pattern(1, covChannels, CVType, cv::Scalar(0));
 
 	// Initalise the diagonal of all first Gaussian's
 	// cov. matrixes with initial deviation parameter
@@ -49,14 +49,14 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	{
 		p[c * (c + 1) / 2 - 1] = initDeviation;
 	}
-	deviation.push_back(cv::repeat(pattern, fRows, fCols).reshape(devChannels));
+	covariance.push_back(cv::repeat(pattern, fRows, fCols).reshape(covChannels));
 
 	// Initialise the rest of parameters with zeros
 	for (int k = 1; k < K; k++)
 	{
 		mean.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, fChannels), cv::Scalar(0, 0));
 		weight.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, 1), cv::Scalar(0));
-		deviation.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, devChannels), cv::Scalar(0));
+		covariance.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, covChannels), cv::Scalar(0));
 	}
 
 	// Current number of Gaussians is 1 for all pixels
@@ -195,14 +195,14 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 	// Pixel value from input image (cast to floating point)
 	cv::Vec<float, channels> pixelVal;
 	// Mean value of each Gaussian
-	std::array<cv::Vec<float, channels>*, K> meanVal {};
+	std::array<cv::Vec<float, channels>*, K> meanPtr {};
 
-	const int devChannels = channels * (channels + 1) / 2;
+	const int covChannels = channels * (channels + 1) / 2;
 	// Lower triangular of Covariance matrix of each Gaussian
-	std::array<cv::Vec<float, devChannels>*, K> deviationVal {};
+	std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
 
 	// Weight of each Gaussians
-	std::array<float*, K> weightVal {};
+	std::array<float*, K> weightPtr {};
 
 	// The distance (difference) between mean and target vector (pixel)
 	std::array<cv::Vec<float, channels>, K> delta {};
@@ -214,9 +214,9 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 		auto* currentKPtr = currentK.ptr<uchar>(i);
 		for ( uchar k = 0U; k < K; k++ )
 		{
-			meanVal.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
-			deviationVal.at(k) = deviation[k].ptr<cv::Vec<float, devChannels>>(i);
-			weightVal.at(k) = weight[k].ptr<float>(i);
+			meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
+			covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
+			weightPtr.at(k) = weight[k].ptr<float>(i);
 		}
 
 		uchar currentPixelK = 0U;
@@ -231,7 +231,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			currentPixelK = currentKPtr[j];
 			for ( uchar k = 0U; k < currentPixelK; k++ )
 			{
-				delta.at(k) = pixelVal - meanVal.at(k)[j];
+				delta.at(k) = pixelVal - meanPtr.at(k)[j];
 			}
 
 			// Whether current pixel 'belongs' to k-th Gaussian
@@ -240,7 +240,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			uchar owner = 0U;
 			for ( owner = 0U; owner < currentPixelK; owner++ )
 			{
-				if ( Mahalanobis(delta.at(owner), deviationVal.at(owner)[j]) < mahThreshold.at(channels - 1 + 3) )
+				if ( Mahalanobis(delta.at(owner), covariancePtr.at(owner)[j]) < mahThreshold.at(channels - 1 + 3) )
 				{
 					isCurrent.at(owner) = true;
 					break;
@@ -251,36 +251,36 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			{
 				if ( currentPixelK < K )
 				{
-					meanVal.at(currentPixelK)[j] = pixelVal;
-					deviationVal.at(currentPixelK)[j] = initDeviation * symm_eye<channels>();
-					weightVal.at(currentPixelK)[j] = alpha;
+					meanPtr.at(currentPixelK)[j] = pixelVal;
+					covariancePtr.at(currentPixelK)[j] = initDeviation * symm_eye<channels>();
+					weightPtr.at(currentPixelK)[j] = alpha;
 					currentPixelK++;
 				}
 				else
 				{
-					meanVal.at(K-1U)[j] = pixelVal;
-					deviationVal.at(K-1U)[j] = initDeviation * symm_eye<channels>();
-					weightVal.at(K-1U)[j] = alpha;
+					meanPtr.at(K-1U)[j] = pixelVal;
+					covariancePtr.at(K-1U)[j] = initDeviation * symm_eye<channels>();
+					weightPtr.at(K-1U)[j] = alpha;
 				}
 			}
 			else
 			{
-				const float w = (alpha / weightVal.at(owner)[j]);
-				meanVal.at(owner)[j] += w * delta.at(owner);
-				deviationVal.at(owner)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(owner));
+				const float w = (alpha / weightPtr.at(owner)[j]);
+				meanPtr.at(owner)[j] += w * delta.at(owner);
+				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(owner));
 			}
 
 			{
 				float w = 0;
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightVal.at(k)[j] = isCurrent.at(k) ? weightVal.at(k)[j] * (1 - alpha) + alpha : weightVal.at(k)[j] * (1 - alpha);
-					w += weightVal.at(k)[j];
+					weightPtr.at(k)[j] = isCurrent.at(k) ? weightPtr.at(k)[j] * (1 - alpha) + alpha : weightPtr.at(k)[j] * (1 - alpha);
+					w += weightPtr.at(k)[j];
 				}
 
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightVal.at(k)[j] = weightVal.at(k)[j] / w;
+					weightPtr.at(k)[j] = weightPtr.at(k)[j] / w;
 				}
 			}
 
@@ -290,11 +290,11 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				noMov = true;
 				for ( uchar k = 0U; k < currentPixelK-1U; k++ )
 				{
-					if ( weightVal.at(k)[j] < weightVal.at(k+1U)[j] )
+					if ( weightPtr.at(k)[j] < weightPtr.at(k+1U)[j] )
 					{
-						std::swap(weightVal.at(k)[j], weightVal.at(k+1U)[j]);
-						cv::swap(meanVal.at(k)[j], meanVal.at(k+1U)[j]);
-						cv::swap(deviationVal.at(k)[j], deviationVal.at(k+1U)[j]);
+						std::swap(weightPtr.at(k)[j], weightPtr.at(k+1U)[j]);
+						cv::swap(meanPtr.at(k)[j], meanPtr.at(k+1U)[j]);
+						cv::swap(covariancePtr.at(k)[j], covariancePtr.at(k+1U)[j]);
 
 						noMov = false;
 					}
