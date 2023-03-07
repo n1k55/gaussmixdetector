@@ -8,7 +8,7 @@
 constexpr float defaultT { 0.1F };
 constexpr unsigned int defaultHistory { 100U };
 constexpr float defaultDeviation { 40.0F };
-constexpr float defaultCf { 0.05F };
+constexpr float defaultCf { 0.2F };
 
 class GaussMixDetector
 {

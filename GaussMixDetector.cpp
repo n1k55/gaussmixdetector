@@ -296,17 +296,41 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 						std::swap(weightPtr.at(k)[j], weightPtr.at(k+1U)[j]);
 						cv::swap(meanPtr.at(k)[j], meanPtr.at(k+1U)[j]);
 						cv::swap(covariancePtr.at(k)[j], covariancePtr.at(k+1U)[j]);
+						std::swap(isCurrent.at(k), isCurrent.at(k+1U));
 
 						noMov = false;
 					}
 				}
 			}
 
-			bool FG = sqrt(delta[0].dot(delta[0])) > T;
-
-			if( FG )
+			for (owner = 0U; owner < currentPixelK; owner++)
 			{
-				motionPtr[j] = 255U;
+				if (isCurrent.at(owner))
+				{
+					break;
+				}
+			}
+
+			float w = weightPtr.at(0)[j];
+			uchar bgCount = 0U;
+			for (bgCount = 1U; bgCount < currentPixelK; bgCount++)
+			{
+				if (w > 1.F - Cf)
+				{
+					if (owner < bgCount)
+					{
+						motionPtr[j] = 0U;
+					}
+					else
+					{
+						motionPtr[j] = 255U;
+					}
+					break;
+				}
+				else
+				{
+					w += weightPtr.at(bgCount)[j];
+				}
 			}
 
 			currentKPtr[j] = currentPixelK;
