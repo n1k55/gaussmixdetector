@@ -267,7 +267,8 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			{
 				const float w = (alpha / weightPtr.at(owner)[j]);
 				meanPtr.at(owner)[j] += w * delta.at(owner);
-				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * symm_delta(delta.at(owner));
+				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * (symm_delta(delta.at(owner)) - covariancePtr.at(owner)[j]);
+				covariancePtr.at(owner)[j] += 10 * alpha * symm_eye<channels>();
 			}
 
 			{
