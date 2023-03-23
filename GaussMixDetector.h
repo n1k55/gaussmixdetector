@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <functional>
 
 #include <opencv2/core/mat.hpp>
 
@@ -31,6 +32,8 @@ class GaussMixDetector
 	cv::Mat currentK {};                                        // current number of Gaussians for each pixel
 
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
+	std::function<void(const cv::Mat&, cv::Mat&)>
+		frameProcessor {};
 
 	std::array<float, 6> mahThreshold                          // list of threshold values for
 	{ 3.8416F, 5.9858F, 7.8732F                                // determining ownership probability
@@ -44,6 +47,7 @@ public:
 
 private:
 	void Init(const cv::Mat& frame);
+	void init_processor(const cv::Mat& frame);
 	template <typename matPtrType, int channels>
 	void getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion);
 };

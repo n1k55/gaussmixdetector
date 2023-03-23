@@ -13,6 +13,104 @@ GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDev
 {
 }
 
+void GaussMixDetector::init_processor(const cv::Mat& frame)
+{
+	auto make_depth_exception = [] {
+		return std::invalid_argument("Unknown cv::Mat depth. Accepted depths: \
+		CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F.");
+	};
+
+	switch (fChannels)
+	{
+		case 1:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<uchar, 1>(_F, _M); };
+					break;
+				case CV_8S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<schar, 1>(_F, _M); };
+					break;
+				case CV_16U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<ushort, 1>(_F, _M); };
+					break;
+				case CV_16S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<short, 1>(_F, _M); };
+					break;
+				case CV_32S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<int, 1>(_F, _M); };
+					break;
+				case CV_32F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<float, 1>(_F, _M); };
+					break;
+				case CV_64F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<double, 1>(_F, _M); };
+					break;
+				default:
+					throw make_depth_exception();
+			}
+			break;
+		case 2:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<uchar, 2>(_F, _M); };
+					break;
+				case CV_8S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<schar, 2>(_F, _M); };
+					break;
+				case CV_16U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<ushort, 2>(_F, _M); };
+					break;
+				case CV_16S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<short, 2>(_F, _M); };
+					break;
+				case CV_32S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<int, 2>(_F, _M); };
+					break;
+				case CV_32F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<float, 2>(_F, _M); };
+					break;
+				case CV_64F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<double, 2>(_F, _M); };
+					break;
+				default:
+					throw make_depth_exception();
+			}
+			break;
+		case 3:
+			switch (frame.depth())
+			{
+				case CV_8U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<uchar, 3>(_F, _M); };
+					break;
+				case CV_8S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<schar, 3>(_F, _M); };
+					break;
+				case CV_16U:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<ushort, 3>(_F, _M); };
+					break;
+				case CV_16S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<short, 3>(_F, _M); };
+					break;
+				case CV_32S:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<int, 3>(_F, _M); };
+					break;
+				case CV_32F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<float, 3>(_F, _M); };
+					break;
+				case CV_64F:
+					frameProcessor = [this](const cv::Mat& _F, cv::Mat& _M) { getpwUpdateAndMotionRGB<double, 3>(_F, _M); };
+					break;
+				default:
+					throw make_depth_exception();
+			}
+			break;
+		default:
+			throw std::invalid_argument("Accepted number of channels: 1 through 3.");
+	}
+}
+
 void GaussMixDetector::Init( const cv::Mat& frame )
 {
 	assert(!frame.empty());
@@ -62,6 +160,8 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	// Current number of Gaussians is 1 for all pixels
 	currentK = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 )
 			, cv::Scalar( 1 ) );
+
+	init_processor(frame);
 
 	firstFrame = false;
 }
@@ -363,98 +463,5 @@ void GaussMixDetector::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
 
 	motion = cv::Mat( fRows, fCols, CV_MAKETYPE( CV_8U, 1 ), cv::Scalar( 0 ) );
 
-	auto make_depth_exception = [] {
-		return std::invalid_argument("Unknown cv::Mat depth. Accepted depths: \
-		CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F.");
-	};
-
-	switch (fChannels)
-	{
-		case 1:
-			switch (frame.depth())
-			{
-				case CV_8U:
-					getpwUpdateAndMotionRGB<uchar, 1>(frame, motion);
-					break;
-				case CV_8S:
-					getpwUpdateAndMotionRGB<schar, 1>(frame, motion);
-					break;
-				case CV_16U:
-					getpwUpdateAndMotionRGB<ushort, 1>(frame, motion);
-					break;
-				case CV_16S:
-					getpwUpdateAndMotionRGB<short, 1>(frame, motion);
-					break;
-				case CV_32S:
-					getpwUpdateAndMotionRGB<int, 1>(frame, motion);
-					break;
-				case CV_32F:
-					getpwUpdateAndMotionRGB<float, 1>(frame, motion);
-					break;
-				case CV_64F:
-					getpwUpdateAndMotionRGB<double, 1>(frame, motion);
-					break;
-				default:
-					throw make_depth_exception();
-			}
-			break;
-		case 2:
-			switch (frame.depth())
-			{
-				case CV_8U:
-					getpwUpdateAndMotionRGB<uchar, 2>(frame, motion);
-					break;
-				case CV_8S:
-					getpwUpdateAndMotionRGB<schar, 2>(frame, motion);
-					break;
-				case CV_16U:
-					getpwUpdateAndMotionRGB<ushort, 2>(frame, motion);
-					break;
-				case CV_16S:
-					getpwUpdateAndMotionRGB<short, 2>(frame, motion);
-					break;
-				case CV_32S:
-					getpwUpdateAndMotionRGB<int, 2>(frame, motion);
-					break;
-				case CV_32F:
-					getpwUpdateAndMotionRGB<float, 2>(frame, motion);
-					break;
-				case CV_64F:
-					getpwUpdateAndMotionRGB<double, 2>(frame, motion);
-					break;
-				default:
-					throw make_depth_exception();
-			}
-			break;
-		case 3:
-			switch (frame.depth())
-			{
-				case CV_8U:
-					getpwUpdateAndMotionRGB<uchar, 3>(frame, motion);
-					break;
-				case CV_8S:
-					getpwUpdateAndMotionRGB<schar, 3>(frame, motion);
-					break;
-				case CV_16U:
-					getpwUpdateAndMotionRGB<ushort, 3>(frame, motion);
-					break;
-				case CV_16S:
-					getpwUpdateAndMotionRGB<short, 3>(frame, motion);
-					break;
-				case CV_32S:
-					getpwUpdateAndMotionRGB<int, 3>(frame, motion);
-					break;
-				case CV_32F:
-					getpwUpdateAndMotionRGB<float, 3>(frame, motion);
-					break;
-				case CV_64F:
-					getpwUpdateAndMotionRGB<double, 3>(frame, motion);
-					break;
-				default:
-					throw make_depth_exception();
-			}
-			break;
-		default:
-			throw std::invalid_argument("Accepted number of channels: 1 through 3.");
-	}
+	frameProcessor(frame, motion);
 }
