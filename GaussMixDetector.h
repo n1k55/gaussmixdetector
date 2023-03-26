@@ -6,7 +6,6 @@
 
 #include <opencv2/core/mat.hpp>
 
-constexpr float defaultT { 0.1F };
 constexpr unsigned int defaultHistory { 100U };
 constexpr float defaultDeviation { 40.0F };
 constexpr float defaultCf { 0.2F };
@@ -18,9 +17,8 @@ class GaussMixDetector
 
 	static constexpr uchar K { 3U };                           // limit number of Gaussians per pixel
 	float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
-	float T { defaultT };                                      // background-foreground threshold
 	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
-	float Cf { defaultCf };
+	float Cf { defaultCf };                                    // model foreground-background threshold
 
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
@@ -43,7 +41,7 @@ class GaussMixDetector
 
 public:
 	GaussMixDetector() = default;
-	explicit GaussMixDetector ( unsigned int _historyLength, double _initDeviation = defaultDeviation, double _T = defaultT);
+	explicit GaussMixDetector ( unsigned int _historyLength, double _Cf = defaultCf, double _initDeviation = defaultDeviation );
 
 	void getMotionPicture( const cv::Mat& frame, cv::Mat& motion );
 

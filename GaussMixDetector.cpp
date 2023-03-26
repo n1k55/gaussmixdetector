@@ -6,10 +6,10 @@
 #include <opencv2/imgproc.hpp>
 
 
-GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _initDeviation, double _T)
+GaussMixDetector::GaussMixDetector( unsigned int _historyLength, double _Cf, double _initDeviation)
 	: alpha { 1 / static_cast<float>(_historyLength) }
-	, T { static_cast<float>(_T) }
 	, initDeviation { static_cast<float>(_initDeviation) }
+	, Cf { static_cast<float>(_Cf) }
 {
 }
 

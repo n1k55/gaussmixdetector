@@ -19,7 +19,7 @@ setup_cli_parser(int argc, char** argv)
 		"{@path          |      | input video file path }"
 		"{history hist   |100   | history parameter     }"
 		"{dev d          |20.0  | initial deviation     }"
-		"{T t            |30.0  | BF threshold          }"
+		"{Cf cf          |0.2   | BF threshold          }"
 		"{show preview   |      | enable preview        }";
 
 	cv::CommandLineParser parser(argc, argv, keys);
@@ -233,8 +233,8 @@ int main(int argc, char** argv)
 
 	const auto history { parser.get<int>("history") };
 	const auto deviation { parser.get<double>("dev") };
-	const auto threshold { parser.get<double>("T") };
-	GaussMixDetector bg(history, deviation, threshold);
+	const auto threshold { parser.get<double>("Cf") };
+	GaussMixDetector bg(history, threshold, deviation);
 
 	main_loop(cap, vidmotion, bg, showPreview);
 
