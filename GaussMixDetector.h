@@ -29,7 +29,9 @@ class GaussMixDetector
 	std::vector <cv::Mat> mean {};
 	std::vector <cv::Mat> weight {};
 	std::vector <cv::Mat> covariance {};
-	cv::Mat currentK {};                                        // current number of Gaussians for each pixel
+	cv::Mat currentK {};                                       // current number of Gaussians for each pixel
+
+	bool covTied { true };                                     // flag whether covariances are tied together
 
 	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
 	std::function<void(const cv::Mat&, cv::Mat&)>

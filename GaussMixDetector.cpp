@@ -149,12 +149,29 @@ void GaussMixDetector::Init( const cv::Mat& frame )
 	}
 	covariance.push_back(cv::repeat(pattern, fRows, fCols).reshape(covChannels));
 
-	// Initialise the rest of parameters with zeros
+	// Initialise the rest of parameters with zeros ...
 	for (int k = 1; k < K; k++)
 	{
 		mean.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, fChannels), cv::Scalar(0, 0));
 		weight.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, 1), cv::Scalar(0));
-		covariance.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, covChannels), cv::Scalar(0));
+	}
+
+	// ... unless covariances are tied in which case we 
+	// populate the cov. vector with pointers to first cov. image
+	if (covTied)
+	{
+		for (int k = 1; k < K; k++)
+		{
+			covariance.push_back(covariance[0]);
+		}
+	}
+	// otherwise init with zeros as with other parameters
+	else
+	{
+		for (int k = 1; k < K; k++)
+		{
+			covariance.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, covChannels), cv::Scalar(0));
+		}
 	}
 
 	// Current number of Gaussians is 1 for all pixels
@@ -352,22 +369,33 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 				if ( currentPixelK < K )
 				{
 					meanPtr.at(currentPixelK)[j] = pixelVal;
-					covariancePtr.at(currentPixelK)[j] = initDeviation * symm_eye<channels>();
 					weightPtr.at(currentPixelK)[j] = alpha;
+					if (!covTied)
+					{
+						covariancePtr.at(currentPixelK)[j] = initDeviation * symm_eye<channels>();
+					}
 					currentPixelK++;
 				}
 				else
 				{
 					meanPtr.at(K-1U)[j] = pixelVal;
-					covariancePtr.at(K-1U)[j] = initDeviation * symm_eye<channels>();
 					weightPtr.at(K-1U)[j] = alpha;
+					if (!covTied)
+					{
+						covariancePtr.at(K-1U)[j] = initDeviation * symm_eye<channels>();
+					}
 				}
 			}
 			else
 			{
 				const float w = (alpha / weightPtr.at(owner)[j]);
 				meanPtr.at(owner)[j] += w * delta.at(owner);
-				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * (symm_delta(delta.at(owner)) - covariancePtr.at(owner)[j]);
+				float tied_multiplier = 1.F;
+				if (covTied)
+				{
+					tied_multiplier /= static_cast<float>(currentPixelK);
+				}
+				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * (symm_delta(delta.at(owner)) - covariancePtr.at(owner)[j]) * tied_multiplier;
 				covariancePtr.at(owner)[j] += 10 * alpha * symm_eye<channels>();
 			}
 
