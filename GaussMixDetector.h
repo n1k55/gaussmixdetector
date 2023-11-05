@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <functional>
+#include <vector>
 
 #include <opencv2/core/mat.hpp>
 
