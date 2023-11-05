@@ -440,10 +440,13 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			}
 
 			float w = weightPtr.at(0)[j];
-			uchar bgCount = 0U;
-			for (bgCount = 1U; bgCount < currentPixelK; bgCount++)
+			for (uchar bgCount = 1U; bgCount < currentPixelK; bgCount++)
 			{
-				if (w > 1.F - Cf)
+				if (w <= (1.F - Cf))
+				{
+					w += weightPtr.at(bgCount)[j];
+				}
+				else
 				{
 					if (owner < bgCount)
 					{
@@ -454,10 +457,6 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 						motionPtr[j] = 255U;
 					}
 					break;
-				}
-				else
-				{
-					w += weightPtr.at(bgCount)[j];
 				}
 			}
 
