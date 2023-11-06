@@ -16,9 +16,9 @@ class GaussMixDetector
 	// add 'set parameter x' function(s) to allow adjusting the model without reinitializing
 
 	static constexpr uchar K { 3U };                           // limit number of Gaussians per pixel
-	float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
-	float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
-	float Cf { defaultCf };                                    // model foreground-background threshold
+	const float alpha { 1 / static_cast<float>(defaultHistory) };    // learning coefficient
+	const float initDeviation { defaultDeviation };                  // initial deviation of all Gaussians
+	const float Cf { defaultCf };                                    // model foreground-background threshold
 
 	int fRows { 0 }, fCols { 0 }, fChannels { 0 };             // frame parameters
 
@@ -29,13 +29,14 @@ class GaussMixDetector
 	std::vector <cv::Mat> covariance {};
 	cv::Mat currentK {};                                       // current number of Gaussians for each pixel
 
-	bool covTied { true };                                     // flag whether covariances are tied together
+	// FIXME! No one changes it. Should move to ctor or remove
+	static constexpr bool covTied { true };                    // flag whether covariances are tied together
 
-	static const int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
+	static constexpr int CVType = cv::DataDepth<float>::value;     // type of 'Mat' pixel info
 	std::function<void(const cv::Mat&, cv::Mat&)>
 		frameProcessor {};
 
-	std::array<float, 6> mahThreshold                          // list of threshold values for
+	static constexpr std::array<float, 6> mahThreshold         // list of threshold values for
 	{ 3.8416F, 5.9858F, 7.8732F                                // determining ownership probability
 	, 6.6564F, 9.245F, 11.6427F };                             // (first row is 95%, second 99%)
 
@@ -51,4 +52,3 @@ private:
 	template <typename matPtrType, int channels>
 	void getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion);
 };
-

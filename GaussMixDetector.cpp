@@ -357,7 +357,7 @@ void GaussMixDetector::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& mo
 			uchar owner = 0U;
 			for ( owner = 0U; owner < currentPixelK; owner++ )
 			{
-				if ( Mahalanobis(delta.at(owner), covariancePtr.at(owner)[j]) < mahThreshold.at(channels - 1 + 3) )
+				if ( Mahalanobis(delta.at(owner), covariancePtr.at(owner)[j]) < GaussMixDetector::mahThreshold.at(channels - 1 + 3) )
 				{
 					isCurrent.at(owner) = true;
 					break;
