@@ -147,20 +147,24 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 	// mb use cv::Mat::forEach
 	for( int i = 0; i < fRows; i++ )
 	{
-		const auto* framePtr = frame.ptr<matPtrType>(i);
-		auto* motionPtr = motion.ptr<uchar>(i);
-		auto* currentKPtr = currentK.ptr<uchar>(i);
+
 		// Vec structures hold information accross channels
 		// Mean value of each Gaussian
 		std::array<cv::Vec<float, channels>*, K> meanPtr {};
+		for ( uchar k = 0U; k < K; k++ )
+		{
+			meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
+		}
 		// Lower triangular of Covariance matrix of each Gaussian
 		std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
+		for ( uchar k = 0U; k < K; k++ )
+		{
+			covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
+		}
 		// Weight of each Gaussians
 		std::array<float*, K> weightPtr {};
 		for ( uchar k = 0U; k < K; k++ )
 		{
-			meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
-			covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
 			weightPtr.at(k) = weight[k].ptr<float>(i);
 		}
 
@@ -172,10 +176,12 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			// pixelVal holds (B, G, R) values in case
 			// input image is of standard 3-channel RGB type
 			cv::Vec<float, channels> pixelVal;
+			const auto* framePtr = frame.ptr<matPtrType>(i);
 			for (int c = 0; c < channels; c++)
 			{
 				pixelVal(c) = static_cast<float>(framePtr[iRGB + c]);
 			}
+			auto* currentKPtr = currentK.ptr<uchar>(i);
 			uchar currentPixelK = currentKPtr[j];
 			// The distance (difference) between mean and target vector (pixel)
 			std::array<cv::Vec<float, channels>, K> delta {};
@@ -281,6 +287,7 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 				}
 				else
 				{
+					auto* motionPtr = motion.ptr<uchar>(i);
 					if (owner < bgCount)
 					{
 						motionPtr[j] = 0U;
