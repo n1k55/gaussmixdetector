@@ -130,8 +130,11 @@ void GaussMixDetectorD3::Init( const cv::Mat& frame )
 
 void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& motion)
 {
+	// template parameters, instatiated
 	constexpr int channels {3};
 	using matPtrType = uchar;
+
+	constexpr int covChannels = channels * (channels + 1) / 2;
 
 	if (sizeof(matPtrType) != frame.elemSize1())
 	{
@@ -141,31 +144,19 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			size mismatch.");
 	}
 
-	// Vec structures hold information accross channels,
-	// e.g. pixelVal holds (B, G, R) values in case
-	// input image is of standard 3-channel RGB type
-
-	// Pixel value from input image (cast to floating point)
-	cv::Vec<float, channels> pixelVal;
-	// Mean value of each Gaussian
-	std::array<cv::Vec<float, channels>*, K> meanPtr {};
-
-	const int covChannels = channels * (channels + 1) / 2;
-	// Lower triangular of Covariance matrix of each Gaussian
-	std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
-
-	// Weight of each Gaussians
-	std::array<float*, K> weightPtr {};
-
-	// The distance (difference) between mean and target vector (pixel)
-	std::array<cv::Vec<float, channels>, K> delta {};
-
 	// mb use cv::Mat::forEach
 	for( int i = 0; i < fRows; i++ )
 	{
 		const auto* framePtr = frame.ptr<matPtrType>(i);
 		auto* motionPtr = motion.ptr<uchar>(i);
 		auto* currentKPtr = currentK.ptr<uchar>(i);
+		// Vec structures hold information accross channels
+		// Mean value of each Gaussian
+		std::array<cv::Vec<float, channels>*, K> meanPtr {};
+		// Lower triangular of Covariance matrix of each Gaussian
+		std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
+		// Weight of each Gaussians
+		std::array<float*, K> weightPtr {};
 		for ( uchar k = 0U; k < K; k++ )
 		{
 			meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
@@ -173,16 +164,21 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			weightPtr.at(k) = weight[k].ptr<float>(i);
 		}
 
-		uchar currentPixelK = 0U;
 		for ( int j = 0; j < fCols; j++ )
 		{
 			const int iRGB = j*channels;
 
+			// Pixel value from input image (cast to floating point)
+			// pixelVal holds (B, G, R) values in case
+			// input image is of standard 3-channel RGB type
+			cv::Vec<float, channels> pixelVal;
 			for (int c = 0; c < channels; c++)
 			{
 				pixelVal(c) = static_cast<float>(framePtr[iRGB + c]);
 			}
-			currentPixelK = currentKPtr[j];
+			uchar currentPixelK = currentKPtr[j];
+			// The distance (difference) between mean and target vector (pixel)
+			std::array<cv::Vec<float, channels>, K> delta {};
 			for ( uchar k = 0U; k < currentPixelK; k++ )
 			{
 				delta.at(k) = pixelVal - meanPtr.at(k)[j];
