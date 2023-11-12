@@ -18,7 +18,7 @@ cv::Vec<float, 6> symm_eye()
 
 // Creates a lower triangular covariance matrix from variances of 'delta'
 template <int m>
-cv::Vec<float, m* (m + 1) / 2> symm_delta(const cv::Vec<float, m>& delta)
+cv::Vec<float, m * (m + 1) / 2> symm_delta(const cv::Vec<float, m>& delta)
 {
 	cv::Vec<float, m* (m + 1) / 2> ltm {};
 
@@ -108,24 +108,17 @@ void GaussMixDetectorD3::Init( const cv::Mat& frame )
 	{
 		p[c * (c + 1) / 2 - 1] = initDeviation;
 	}
-	covariance.push_back(cv::repeat(pattern, fRows, fCols).reshape(covChannels));
-
-	// ... unless covariances are tied in which case we 
+	const auto covariance_initial { cv::repeat(pattern, fRows, fCols).reshape(covChannels) };
 	// populate the cov. vector with pointers to first cov. image
 	if (covTied)
 	{
-		for (int k = 1; k < K; k++)
-		{
-			covariance.push_back(covariance[0]);
-		}
+		covariance.fill(covariance_initial);
 	}
 	// otherwise init with zeros as with other parameters
 	else
 	{
-		for (int k = 1; k < K; k++)
-		{
-			covariance.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, covChannels), cv::Scalar(0));
-		}
+		covariance.fill({fRows, fCols, CV_MAKETYPE(CVType, covChannels), cv::Scalar(0)});
+		weight.front() = covariance_initial;
 	}
 
 	// Current number of Gaussians is 1 for all pixels
@@ -167,6 +160,7 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 	// The distance (difference) between mean and target vector (pixel)
 	std::array<cv::Vec<float, channels>, K> delta {};
 
+	// mb use cv::Mat::forEach
 	for( int i = 0; i < fRows; i++ )
 	{
 		const auto* framePtr = frame.ptr<matPtrType>(i);

@@ -26,7 +26,7 @@ class GaussMixDetectorD3
 
 	std::array <cv::Mat, K> mean {};
 	std::array <cv::Mat, K> weight {};
-	std::vector <cv::Mat> covariance {};
+	std::array <cv::Mat, K> covariance {};
 	cv::Mat currentK {};                                       // current number of Gaussians for each pixel
 
 	// FIXME! No one changes it. Should move to ctor or remove
