@@ -78,17 +78,19 @@ void GaussMixDetectorD3::Init( const cv::Mat& frame )
 		throw std::invalid_argument("Image has invalid size.");
 	}
 
-	cv::Mat tmp;
 	fRows = frame.rows;
 	fCols = frame.cols;
 	fChannels = frame.channels();
 
+	mean.fill({fRows, fCols, CV_MAKETYPE(CVType, fChannels), cv::Scalar(0, 0)});
 	// Initialise the first Gaussian's mean with the first frame
+	cv::Mat tmp;
 	frame.convertTo( tmp, CV_MAKETYPE(CVType, fChannels ) );
-	mean.push_back( tmp );
+	mean.front() = tmp;
 
+	weight.fill({fRows, fCols, CV_MAKETYPE(CVType, 1), cv::Scalar(0)});
 	// Initialise the first Gaussian's weight with alpha
-	weight.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, 1 ), cv::Scalar( alpha ));
+	weight.front() = cv::Mat(fRows, fCols, CV_MAKETYPE(CVType, 1 ), cv::Scalar( alpha ));
 
 	// The magic below comes down to the task of storing the
 	// symmetrical covariance matrix as lower triangular matrix
@@ -107,13 +109,6 @@ void GaussMixDetectorD3::Init( const cv::Mat& frame )
 		p[c * (c + 1) / 2 - 1] = initDeviation;
 	}
 	covariance.push_back(cv::repeat(pattern, fRows, fCols).reshape(covChannels));
-
-	// Initialise the rest of parameters with zeros ...
-	for (int k = 1; k < K; k++)
-	{
-		mean.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, fChannels), cv::Scalar(0, 0));
-		weight.emplace_back(fRows, fCols, CV_MAKETYPE(CVType, 1), cv::Scalar(0));
-	}
 
 	// ... unless covariances are tied in which case we 
 	// populate the cov. vector with pointers to first cov. image

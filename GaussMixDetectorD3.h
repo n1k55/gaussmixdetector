@@ -24,8 +24,8 @@ class GaussMixDetectorD3
 
 	bool firstFrame { true };                                  // first step flag
 
-	std::vector <cv::Mat> mean {};
-	std::vector <cv::Mat> weight {};
+	std::array <cv::Mat, K> mean {};
+	std::array <cv::Mat, K> weight {};
 	std::vector <cv::Mat> covariance {};
 	cv::Mat currentK {};                                       // current number of Gaussians for each pixel
 
