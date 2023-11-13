@@ -147,36 +147,34 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 	// mb use cv::Mat::forEach
 	for( int i = 0; i < fRows; i++ )
 	{
-
-		// Vec structures hold information accross channels
-		// Mean value of each Gaussian
-		std::array<cv::Vec<float, channels>*, K> meanPtr {};
-		for ( uchar k = 0U; k < K; k++ )
-		{
-			meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
-		}
-		// Lower triangular of Covariance matrix of each Gaussian
-		std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
-		for ( uchar k = 0U; k < K; k++ )
-		{
-			covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
-		}
-		// Weight of each Gaussians
-		std::array<float*, K> weightPtr {};
-		for ( uchar k = 0U; k < K; k++ )
-		{
-			weightPtr.at(k) = weight[k].ptr<float>(i);
-		}
-
 		for ( int j = 0; j < fCols; j++ )
 		{
-			const int iRGB = j*channels;
+			// Vec structures hold information accross channels
+			// Mean value of each Gaussian
+			std::array<cv::Vec<float, channels>*, K> meanPtr {};
+			for ( uchar k = 0U; k < K; k++ )
+			{
+				meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
+			}
+			// Lower triangular of Covariance matrix of each Gaussian
+			std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
+			for ( uchar k = 0U; k < K; k++ )
+			{
+				covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
+			}
+			// Weight of each Gaussians
+			std::array<float*, K> weightPtr {};
+			for ( uchar k = 0U; k < K; k++ )
+			{
+				weightPtr.at(k) = weight[k].ptr<float>(i);
+			}
 
 			// Pixel value from input image (cast to floating point)
 			// pixelVal holds (B, G, R) values in case
 			// input image is of standard 3-channel RGB type
 			cv::Vec<float, channels> pixelVal;
 			const auto* framePtr = frame.ptr<matPtrType>(i);
+			const int iRGB = j*channels;
 			for (int c = 0; c < channels; c++)
 			{
 				pixelVal(c) = static_cast<float>(framePtr[iRGB + c]);
