@@ -144,11 +144,12 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			size mismatch.");
 	}
 
-	// mb use cv::Mat::forEach
-	for( int i = 0; i < fRows; i++ )
-	{
-		for ( int j = 0; j < fCols; j++ )
+	frame.forEach<matPtrType>(
+		[this, &motion, &frame](matPtrType& px, const int* pos) -> void
 		{
+			const int i {pos[0]};
+			const int j {pos[1]};
+
 			// Vec structures hold information accross channels
 			// Mean value of each Gaussian
 			std::array<cv::Vec<float, channels>*, K> meanPtr {};
@@ -300,7 +301,7 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 
 			currentKPtr[j] = currentPixelK;
 		}
-	}
+	);
 }
 
 void GaussMixDetectorD3::getMotionPicture( const cv::Mat& frame, cv::Mat& motion )
