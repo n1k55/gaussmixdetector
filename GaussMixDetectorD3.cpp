@@ -152,22 +152,22 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 
 			// Vec structures hold information accross channels
 			// Mean value of each Gaussian
-			std::array<cv::Vec<float, channels>*, K> meanPtr {};
+			std::array<cv::Vec<float, channels>*, K> meanItemPtr {};
 			for ( uchar k = 0U; k < K; k++ )
 			{
-				meanPtr.at(k) = mean[k].ptr<cv::Vec<float, channels>>(i);
+				meanItemPtr.at(k) = mean.at(k).ptr<cv::Vec<float, channels>>(i, j);
 			}
 			// Lower triangular of Covariance matrix of each Gaussian
-			std::array<cv::Vec<float, covChannels>*, K> covariancePtr {};
+			std::array<cv::Vec<float, covChannels>*, K> covarianceItemPtr {};
 			for ( uchar k = 0U; k < K; k++ )
 			{
-				covariancePtr.at(k) = covariance[k].ptr<cv::Vec<float, covChannels>>(i);
+				covarianceItemPtr.at(k) = covariance.at(k).ptr<cv::Vec<float, covChannels>>(i, j);
 			}
 			// Weight of each Gaussians
-			std::array<float*, K> weightPtr {};
+			std::array<float*, K> weightItemPtr {};
 			for ( uchar k = 0U; k < K; k++ )
 			{
-				weightPtr.at(k) = weight[k].ptr<float>(i);
+				weightItemPtr.at(k) = weight.at(k).ptr<float>(i, j);
 			}
 
 			// Pixel value from input image (cast to floating point)
@@ -180,13 +180,13 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			{
 				pixelVal(c) = static_cast<float>(framePtr[iRGB + c]);
 			}
-			auto* currentKPtr = currentK.ptr<uchar>(i);
-			uchar currentPixelK = currentKPtr[j];
+			auto* currentKPtr = currentK.ptr<uchar>(i, j);
+			uchar currentPixelK = *currentKPtr;
 			// The distance (difference) between mean and target vector (pixel)
 			std::array<cv::Vec<float, channels>, K> delta {};
 			for ( uchar k = 0U; k < currentPixelK; k++ )
 			{
-				delta.at(k) = pixelVal - meanPtr.at(k)[j];
+				delta.at(k) = pixelVal - *meanItemPtr.at(k);
 			}
 
 			// Whether current pixel 'belongs' to k-th Gaussian
@@ -195,7 +195,7 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			uchar owner = 0U;
 			for ( owner = 0U; owner < currentPixelK; owner++ )
 			{
-				if ( Mahalanobis3(delta.at(owner), covariancePtr.at(owner)[j]) < GaussMixDetectorD3::mahThreshold.at(channels - 1 + 3) )
+				if ( Mahalanobis3(delta.at(owner), *covarianceItemPtr.at(owner)) < GaussMixDetectorD3::mahThreshold.at(channels - 1 + 3) )
 				{
 					isCurrent.at(owner) = true;
 					break;
@@ -206,48 +206,48 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			{
 				if ( currentPixelK < K )
 				{
-					meanPtr.at(currentPixelK)[j] = pixelVal;
-					weightPtr.at(currentPixelK)[j] = alpha;
+					*meanItemPtr.at(currentPixelK) = pixelVal;
+					*weightItemPtr.at(currentPixelK) = alpha;
 					if (!covTied)
 					{
-						covariancePtr.at(currentPixelK)[j] = initDeviation * symm_eye();
+						*covarianceItemPtr.at(currentPixelK) = initDeviation * symm_eye();
 					}
 					currentPixelK++;
 				}
 				else
 				{
-					meanPtr.at(K-1U)[j] = pixelVal;
-					weightPtr.at(K-1U)[j] = alpha;
+					*meanItemPtr.at(K-1U) = pixelVal;
+					*weightItemPtr.at(K-1U) = alpha;
 					if (!covTied)
 					{
-						covariancePtr.at(K-1U)[j] = initDeviation * symm_eye();
+						*covarianceItemPtr.at(K-1U) = initDeviation * symm_eye();
 					}
 				}
 			}
 			else
 			{
-				const float w = (alpha / weightPtr.at(owner)[j]);
-				meanPtr.at(owner)[j] += w * delta.at(owner);
+				const float w = (alpha / *weightItemPtr.at(owner));
+				*meanItemPtr.at(owner) += w * delta.at(owner);
 				float tied_multiplier = 1.F;
 				if (covTied)
 				{
 					tied_multiplier /= static_cast<float>(currentPixelK);
 				}
-				covariancePtr.at(owner)[j] += std::min( 20*alpha, w ) * (symm_delta(delta.at(owner)) - covariancePtr.at(owner)[j]) * tied_multiplier;
-				covariancePtr.at(owner)[j] += 10 * alpha * symm_eye();
+				*covarianceItemPtr.at(owner) += std::min( 20*alpha, w ) * (symm_delta(delta.at(owner)) - *covarianceItemPtr.at(owner)) * tied_multiplier;
+				*covarianceItemPtr.at(owner) += 10 * alpha * symm_eye();
 			}
 
 			{
 				float w = 0;
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightPtr.at(k)[j] = isCurrent.at(k) ? weightPtr.at(k)[j] * (1 - alpha) + alpha : weightPtr.at(k)[j] * (1 - alpha);
-					w += weightPtr.at(k)[j];
+					*weightItemPtr.at(k) = isCurrent.at(k) ? *weightItemPtr.at(k) * (1 - alpha) + alpha : *weightItemPtr.at(k) * (1 - alpha);
+					w += *weightItemPtr.at(k);
 				}
 
 				for ( uchar k = 0U; k < currentPixelK; k++ )
 				{
-					weightPtr.at(k)[j] = weightPtr.at(k)[j] / w;
+					*weightItemPtr.at(k) /= w;
 				}
 			}
 
@@ -257,11 +257,11 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 				noMov = true;
 				for ( uchar k = 0U; k < currentPixelK-1U; k++ )
 				{
-					if ( weightPtr.at(k)[j] < weightPtr.at(k+1U)[j] )
+					if ( *weightItemPtr.at(k) < *weightItemPtr.at(k+1U) )
 					{
-						std::swap(weightPtr.at(k)[j], weightPtr.at(k+1U)[j]);
-						cv::swap(meanPtr.at(k)[j], meanPtr.at(k+1U)[j]);
-						cv::swap(covariancePtr.at(k)[j], covariancePtr.at(k+1U)[j]);
+						std::swap(weightItemPtr.at(k), weightItemPtr.at(k+1U));
+						cv::swap(meanItemPtr.at(k), meanItemPtr.at(k+1U));
+						cv::swap(covarianceItemPtr.at(k), covarianceItemPtr.at(k+1U));
 						std::swap(isCurrent.at(k), isCurrent.at(k+1U));
 
 						noMov = false;
@@ -277,29 +277,29 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 				}
 			}
 
-			float w = weightPtr.at(0)[j];
+			float w = *weightItemPtr.at(0);
 			for (uchar bgCount = 1U; bgCount < currentPixelK; bgCount++)
 			{
 				if (w <= (1.F - Cf))
 				{
-					w += weightPtr.at(bgCount)[j];
+					w += *weightItemPtr.at(bgCount);
 				}
 				else
 				{
-					auto* motionPtr = motion.ptr<uchar>(i);
+					auto* motionPtr = motion.ptr<uchar>(i, j);
 					if (owner < bgCount)
 					{
-						motionPtr[j] = 0U;
+						*motionPtr = 0U;
 					}
 					else
 					{
-						motionPtr[j] = 255U;
+						*motionPtr = 255U;
 					}
 					break;
 				}
 			}
 
-			currentKPtr[j] = currentPixelK;
+			*currentKPtr = currentPixelK;
 		}
 	);
 }
