@@ -144,8 +144,9 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			size mismatch.");
 	}
 
-	frame.forEach<matPtrType>(
-		[this, &motion, &frame](matPtrType& px, const int* pos) -> void
+	typedef cv::Point3_<matPtrType> Pixel;
+	frame.forEach<Pixel>(
+		[this, &motion, &frame](Pixel& px, const int* pos) -> void
 		{
 			const int i {pos[0]};
 			const int j {pos[1]};
@@ -173,13 +174,7 @@ void GaussMixDetectorD3::getpwUpdateAndMotionRGB(const cv::Mat& frame, cv::Mat& 
 			// Pixel value from input image (cast to floating point)
 			// pixelVal holds (B, G, R) values in case
 			// input image is of standard 3-channel RGB type
-			cv::Vec<float, channels> pixelVal;
-			const auto* framePtr = frame.ptr<matPtrType>(i);
-			const int iRGB = j*channels;
-			for (int c = 0; c < channels; c++)
-			{
-				pixelVal(c) = static_cast<float>(framePtr[iRGB + c]);
-			}
+			cv::Vec<float, channels> pixelVal(px.x, px.y, px.z);
 			auto* currentKPtr = currentK.ptr<uchar>(i, j);
 			uchar currentPixelK = *currentKPtr;
 			// The distance (difference) between mean and target vector (pixel)
